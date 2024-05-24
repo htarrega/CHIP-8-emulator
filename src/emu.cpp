@@ -1,6 +1,10 @@
 #include <array>
+#include <atomic>
+#include <chrono>
 #include <iostream>
+#include <stack>
 #include <string>
+#include <thread>
 #include <vector>
 
 static const std::vector<std::string> fonts = {
@@ -23,11 +27,11 @@ static const std::vector<std::string> fonts = {
 };
 
 // From 000 to 1FF
-class memory {
+class Memory {
   std::vector<uint8_t> mem;
 
 public:
-  memory() : mem(4096, 0) { void loadFonts(memory & mem); }
+  Memory() : mem(4096, 0) { loadFonts(); }
 
   auto begin() { return mem.begin(); }
 
@@ -52,6 +56,10 @@ public:
     }
   }
 
+  void setByte(const size_t index, const std::string &value) {
+    setByte(index, hexToIndex(value));
+  }
+
   void setByte(const std::string &index, const std::string &value) {
     setByte(hexToIndex(index), hexToIndex(value));
   }
@@ -67,13 +75,16 @@ private:
   size_t hexToIndex(const std::string &hexAddress) const {
     return std::stoi(hexAddress, nullptr, 16);
   }
-  void loadFonts(memory &mem, const std::vector<std::string> &fonts) {
+  void loadFonts() {
+    size_t pos = 0;
     for (std::string byte : fonts) {
+      setByte(pos, byte);
+      pos++;
     }
   }
 };
 
-class display {
+class Display {
   static const size_t rows = 64;
   static const size_t cols = 32;
   std::array<std::array<bool, rows>, cols> matrix = {};
@@ -98,11 +109,39 @@ public:
   }
 };
 
+// class Timer {
+//   uint8_t value = 255;
+
+// public:
+//   void decrementTimer() {
+//     if (value == 0) {
+//       value = 255;
+//     } else {
+//       value--;
+//     }
+//   }
+//   uint8_t getValue() const { return value.load(); }
+
+//   void runTimer(Timer &timer) {
+//     while (true) {
+//       std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
+//       timer.decrementTimer();
+//     }
+//   }
+// }
+
 int main(int argc, char **argv) {
   std::cout << "I'm EMU" << std::endl;
   // INITIALIZATIONS//
-  memory mem;
-  display disp;
+  Memory mem;
+  Display disp;
+  std::stack<u_int8_t> stack;
+
+  int instructionsPerSecond = 700;
+  std::chrono::milliseconds timeOrderInMs(1000);
+  std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
+                                               instructionsPerSecond);
+
   //--------------//
   mem.setByte("00", "11");
   mem.setByte("1FF", "FF");
@@ -113,5 +152,22 @@ int main(int argc, char **argv) {
   }
 
   disp.protoPrint();
+
+  while (true) {
+    auto execStart = std::chrono::steady_clock::now();
+
+    std::cout << "FETCH" << std::endl;
+    std::cout << "DECODE" << std::endl;
+    std::cout << "EXECUTE" << std::endl;
+
+    auto execEnd = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        execEnd - execStart);
+
+    if (elapsed < timePerInstruction) {
+      auto remainingTime = timePerInstruction - elapsed;
+      std::this_thread::sleep_for(remainingTime);
+    }
+  }
   return 0;
 }
