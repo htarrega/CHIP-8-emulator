@@ -1,3 +1,9 @@
+#include <cstdint>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <vector>
+
 #include "components.hpp"
 
 std::string uint8ToHex(uint8_t value) {
@@ -62,9 +68,9 @@ void Memory::setByte(const std::string &index, const std::string &value) {
   setByte(hexToIndex(index), hexToIndex(value));
 }
 
-void Memory::setPC(size_t pc) { PC = pc; }
+void Memory::setPC(uint16_t pc) { PC = pc; }
 
-size_t Memory::getPC() { return PC; }
+uint16_t Memory::getPC() { return PC; }
 
 void Memory::print() {
   for (const auto byte : mem) {
@@ -91,18 +97,58 @@ void Memory::loadFonts() {
     setByte(pos, byte);
     pos++;
   }
+  setPC(pos);
+}
+
+void Memory::loadBinary(std::string const &filename) {
+  std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
+  if (!ifs) {
+    std::cerr << "Error opening file: " << filename << std::endl;
+    exit(0);
+  }
+
+  std::ifstream::pos_type pos = ifs.tellg();
+  std::vector<char> binary(pos);
+
+  ifs.seekg(0, std::ios::beg);
+  ifs.read(&binary[0], pos);
+
+  if (!ifs) {
+    std::cerr << "Error reading file: " << filename << std::endl;
+    exit(0);
+  }
+  auto pc = getPC();
+  pc = pc + 1;
+  for (auto byte : binary) {
+    setByte(pc, byte);
+    pc++;
+  }
+  setPC(pc);
 }
 
 void Display::setPixel(const size_t row, const size_t col, bool val) {
   matrix[row][col] = val;
 }
 
+bool Display::getPixel(const size_t row, const size_t col) {
+  return matrix[row][col];
+}
+
 void Display::protoPrint() {
   char printable;
   for (const auto &row : matrix) {
     for (bool valor : row) {
-      printable = valor ? 'X' : '.';
+      printable = valor ? 'X' : ' ';
       std::cout << printable << " ";
+    }
+    std::cout << std::endl;
+  }
+}
+
+void Display::setAllPixels(bool val) {
+  for (const auto &row : matrix) {
+    for (bool pixel : row) {
+      pixel = val;
     }
     std::cout << std::endl;
   }
@@ -120,4 +166,22 @@ void Display::clear() {
     }
   }
   setReprint(true);
+}
+
+Registers::Registers() : mem(16, 0) {}
+
+Registers::Registers(size_t size) : mem(size, 0) {}
+
+void Registers::setReg(size_t reg, uint8_t val) {
+  if (reg >= mem.size() || reg < 0) {
+    throw std::out_of_range("Register index out of range");
+  }
+  mem[reg] = val;
+}
+
+uint8_t Registers::getReg(size_t reg) const {
+  if (reg >= mem.size() || reg < 0) {
+    throw std::out_of_range("Register index out of range");
+  }
+  return mem[reg];
 }

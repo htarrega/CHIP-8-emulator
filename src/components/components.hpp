@@ -30,7 +30,7 @@ std::string uint8ToHex(uint8_t value);
 
 class Memory {
   std::vector<uint8_t> mem;
-  size_t PC = 0;
+  uint16_t PC = 0;
 
 public:
   Memory();
@@ -41,10 +41,11 @@ public:
   void setByte(const size_t index, uint8_t value);
   void setByte(const size_t index, const std::string &value);
   void setByte(const std::string &index, const std::string &value);
-  void setPC(size_t pc);
-  size_t getPC();
+  void setPC(uint16_t pc);
+  uint16_t getPC();
   void print();
   void printInHex();
+  void loadBinary(std::string const &filename);
 
 private:
   size_t hexToIndex(const std::string &hexAddress) const;
@@ -59,10 +60,22 @@ class Display {
 
 public:
   void setPixel(const size_t row, const size_t col, bool val);
+  bool getPixel(const size_t row, const size_t col);
+  void setAllPixels(bool val);
   void protoPrint();
   void setReprint(bool val);
   bool getReprint();
   void clear();
+};
+
+class Registers {
+  std::vector<uint8_t> mem;
+
+public:
+  Registers();
+  Registers(size_t size);
+  void setReg(size_t reg, uint8_t val);
+  uint8_t getReg(size_t reg) const;
 };
 
 // class Timer {

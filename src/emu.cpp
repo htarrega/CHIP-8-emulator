@@ -1,6 +1,7 @@
 #include <array>
 #include <atomic>
 #include <chrono>
+#include <fstream>
 #include <iostream>
 #include <stack>
 #include <string>
@@ -9,29 +10,45 @@
 #include <vector>
 
 #include "components/components.hpp"
+#include "instructions/instructions.hpp"
 
 uint16_t fetch(components::Memory &mem) {
-  size_t pc = mem.getPC();
+  uint16_t pc = mem.getPC();
   uint16_t firstHalf = mem.getByte(pc) << 8;
   uint16_t secondHalf = mem.getByte(pc + 1);
   mem.setPC(pc + 2);
   return firstHalf | secondHalf;
 }
 
-bool decodeAndExecute(uint16_t instruction) {
-  uint8_t instCode = (instCode >> 4) & 0x0F;
+void decodeAndExecute(uint16_t instruction, components::Display &disp,
+                      components::Memory &mem, std::stack<uint16_t> &stack,
+                      components::Registers variableRegs, uint16_t indexReg) {
+
+  uint8_t instCode = (instruction >> 12) & 0x0F;
   switch (instCode) {
   case 0x0:
+    if ((instruction & 0x00FF) == 0xE0) {
+      clearScreen(disp);
+    } else {
+      retFromSubroutine(mem, stack);
+    }
     break;
   case 0x1:
+    jumpTo(instruction, mem);
     break;
+  case 0x2:
+    callSubroutine(instruction, mem, stack);
   case 0x6:
+    setRegister(instruction, variableRegs);
     break;
   case 0x7:
+    addInRegister(instruction, variableRegs);
     break;
   case 0xA:
+    setIndexRegister(instruction, indexReg);
     break;
   case 0xD:
+    displaySprite(instruction, variableRegs, mem, disp);
     break;
   default:
     std::cout << "Opcode does not exist." << std::endl;
@@ -44,39 +61,37 @@ int main(int argc, char **argv) {
   // INITIALIZATIONS//
   components::Memory mem;
   components::Display disp;
-  std::stack<u_int8_t> stack;
+  components::Registers variableRegs;
+  uint16_t indexReg;
+  std::stack<uint16_t> stack;
 
   int instructionsPerSecond = 700;
   std::chrono::milliseconds timeOrderInMs(1000);
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
+  mem.loadBinary(
+      "/home/hutarsan/projects/leisure/CHIP-8-emulator/binaries/ibm_logo.ch8");
   //--------------//
-  mem.setByte("00", "11");
-  mem.setByte("1FF", "FF");
-  mem.print();
-  mem.printInHex();
 
-  std::cout << fetch(mem) << std::endl;
+  while (true) {
+    auto execStart = std::chrono::steady_clock::now();
 
-  // while (true) {
-  //   auto execStart = std::chrono::steady_clock::now();
+    auto instruction = fetch(mem);
+    std::cout << instruction << std::endl;
+    decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg);
 
-  //   std::cout << "FETCH" << std::endl;
-  //   std::cout << "DECODE" << std::endl;
-  //   std::cout << "EXECUTE" << std::endl;
+    auto execEnd = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
+        execEnd - execStart);
 
-  //   auto execEnd = std::chrono::steady_clock::now();
-  //   auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(
-  //       execEnd - execStart);
-
-  //   if (elapsed < timePerInstruction) {
-  //     auto remainingTime = timePerInstruction - elapsed;
-  //     std::this_thread::sleep_for(remainingTime);
-  //   }
-  //   if (disp.getReprint() == true) {
-  //     disp.protoPrint();
-  //   }
-  // }
+    if (elapsed < timePerInstruction) {
+      auto remainingTime = timePerInstruction - elapsed;
+      std::this_thread::sleep_for(remainingTime);
+    }
+    if (disp.getReprint() == true) {
+      disp.protoPrint();
+    }
+  }
   return 0;
 }
