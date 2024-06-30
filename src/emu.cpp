@@ -14,10 +14,10 @@
 
 uint16_t fetch(components::Memory &mem) {
   uint16_t pc = mem.getPC();
-  uint16_t firstHalf = mem.getByte(pc) << 8;
-  uint16_t secondHalf = mem.getByte(pc + 1);
+  uint8_t highByte = mem.getByte(pc);
+  uint8_t lowByte = mem.getByte(pc + 1);
   mem.setPC(pc + 2);
-  return firstHalf | secondHalf;
+  return (static_cast<uint16_t>(highByte) << 8) | lowByte;
 }
 
 void decodeAndExecute(uint16_t instruction, components::Display &disp,
@@ -70,15 +70,15 @@ int main(int argc, char **argv) {
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
+  mem.printInHex();
   mem.loadBinary(
-      "/home/hutarsan/projects/leisure/CHIP-8-emulator/binaries/ibm_logo.ch8");
+      "/home/hugots/projects/leisure/CHIP-8-emulator/binaries/logo.ch8");
   //--------------//
 
   while (true) {
     auto execStart = std::chrono::steady_clock::now();
 
     auto instruction = fetch(mem);
-    std::cout << instruction << std::endl;
     decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg);
 
     auto execEnd = std::chrono::steady_clock::now();

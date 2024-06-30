@@ -118,12 +118,10 @@ void Memory::loadBinary(std::string const &filename) {
     exit(0);
   }
   auto pc = getPC();
-  pc = pc + 1;
   for (auto byte : binary) {
     setByte(pc, byte);
     pc++;
   }
-  setPC(pc);
 }
 
 void Display::setPixel(const size_t row, const size_t col, bool val) {
