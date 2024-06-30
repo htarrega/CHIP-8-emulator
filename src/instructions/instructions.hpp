@@ -12,9 +12,9 @@ void jumpTo(uint16_t instruction, Memory &mem);
 void callSubroutine(uint16_t instruction, Memory &mem,
                     std::stack<uint16_t> &stack);
 // 6XNN
-void setRegister(uint16_t instruction, components::Registers variableRegs);
+void setRegister(uint16_t instruction, components::Registers &variableRegs);
 // 7XNN
-void addInRegister(uint16_t instruction, components::Registers variableRegs);
+void addInRegister(uint16_t instruction, components::Registers &variableRegs);
 // ANNN
 void setIndexRegister(uint16_t instruction, uint16_t indexReg);
 // DXYN

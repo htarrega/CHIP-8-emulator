@@ -22,7 +22,7 @@ uint16_t fetch(components::Memory &mem) {
 
 void decodeAndExecute(uint16_t instruction, components::Display &disp,
                       components::Memory &mem, std::stack<uint16_t> &stack,
-                      components::Registers variableRegs, uint16_t indexReg) {
+                      components::Registers &variableRegs, uint16_t indexReg) {
 
   uint8_t instCode = (instruction >> 12) & 0x0F;
   switch (instCode) {
@@ -79,6 +79,7 @@ int main(int argc, char **argv) {
     auto execStart = std::chrono::steady_clock::now();
 
     auto instruction = fetch(mem);
+    std::cout << "i: " << instruction << std::endl;
     decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg);
 
     auto execEnd = std::chrono::steady_clock::now();
@@ -89,9 +90,10 @@ int main(int argc, char **argv) {
       auto remainingTime = timePerInstruction - elapsed;
       std::this_thread::sleep_for(remainingTime);
     }
-    if (disp.getReprint() == true) {
-      disp.protoPrint();
-    }
+    // if (disp.getReprint() == true) {
+    //   disp.protoPrint();
+    // }
+    disp.protoPrint();
   }
   return 0;
 }

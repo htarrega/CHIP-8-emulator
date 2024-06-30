@@ -20,13 +20,13 @@ void retFromSubroutine(Memory &mem, std::stack<uint16_t> &stack) {
   mem.setPC(ret);
 }
 
-void setRegister(uint16_t instruction, components::Registers variableRegs) {
+void setRegister(uint16_t instruction, components::Registers &variableRegs) {
   uint8_t reg = (instruction & 0x0F00) >> 8;
   uint8_t val = (instruction & 0x00FF);
   variableRegs.setReg(reg, val);
 }
 
-void addInRegister(uint16_t instruction, components::Registers variableRegs) {
+void addInRegister(uint16_t instruction, components::Registers &variableRegs) {
   uint16_t oneByteMaxVal = 255;
 
   uint8_t reg = (instruction & 0x0F00) >> 8;
