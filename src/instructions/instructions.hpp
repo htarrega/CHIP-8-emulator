@@ -16,7 +16,8 @@ void setRegister(uint16_t instruction, components::Registers &variableRegs);
 // 7XNN
 void addInRegister(uint16_t instruction, components::Registers &variableRegs);
 // ANNN
-void setIndexRegister(uint16_t instruction, uint16_t indexReg);
+void setIndexRegister(uint16_t instruction, uint16_t &indexReg);
 // DXYN
 void displaySprite(uint16_t instruction, components::Registers &variableRegs,
-                   Memory &mem, Display &display);
+                   components::Memory &mem, components::Display &display,
+                   uint16_t &indexReg);

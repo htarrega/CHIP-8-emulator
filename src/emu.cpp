@@ -2,6 +2,7 @@
 #include <atomic>
 #include <chrono>
 #include <fstream>
+#include <iomanip>
 #include <iostream>
 #include <stack>
 #include <string>
@@ -22,7 +23,7 @@ uint16_t fetch(components::Memory &mem) {
 
 void decodeAndExecute(uint16_t instruction, components::Display &disp,
                       components::Memory &mem, std::stack<uint16_t> &stack,
-                      components::Registers &variableRegs, uint16_t indexReg) {
+                      components::Registers &variableRegs, uint16_t &indexReg) {
 
   uint8_t instCode = (instruction >> 12) & 0x0F;
   switch (instCode) {
@@ -38,6 +39,7 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
     break;
   case 0x2:
     callSubroutine(instruction, mem, stack);
+    break;
   case 0x6:
     setRegister(instruction, variableRegs);
     break;
@@ -48,7 +50,7 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
     setIndexRegister(instruction, indexReg);
     break;
   case 0xD:
-    displaySprite(instruction, variableRegs, mem, disp);
+    displaySprite(instruction, variableRegs, mem, disp, indexReg);
     break;
   default:
     std::cout << "Opcode does not exist." << std::endl;
@@ -57,7 +59,7 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
 }
 
 int main(int argc, char **argv) {
-  std::cout << "I'm EMU" << std::endl;
+  std::cout << "I'm EMU!" << std::endl;
   // INITIALIZATIONS//
   components::Memory mem;
   components::Display disp;
@@ -71,15 +73,16 @@ int main(int argc, char **argv) {
                                                instructionsPerSecond);
 
   mem.printInHex();
-  mem.loadBinary(
-      "/home/hugots/projects/leisure/CHIP-8-emulator/binaries/logo.ch8");
+  mem.loadBinary("/home/hutarsan/projects/leisure/CHIP-8-emulator/binaries/"
+                 "chip8-logo.ch8");
   //--------------//
 
   while (true) {
     auto execStart = std::chrono::steady_clock::now();
 
     auto instruction = fetch(mem);
-    std::cout << "i: " << instruction << std::endl;
+    std::cout << "i: 0x" << std::setw(4) << std::setfill('0') << std::hex
+              << instruction << std::endl;
     decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg);
 
     auto execEnd = std::chrono::steady_clock::now();
@@ -90,9 +93,6 @@ int main(int argc, char **argv) {
       auto remainingTime = timePerInstruction - elapsed;
       std::this_thread::sleep_for(remainingTime);
     }
-    // if (disp.getReprint() == true) {
-    //   disp.protoPrint();
-    // }
     disp.protoPrint();
   }
   return 0;
