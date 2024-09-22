@@ -72,9 +72,8 @@ int main(int argc, char **argv) {
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
-  mem.printInHex();
   mem.loadBinary("/home/hutarsan/projects/leisure/CHIP-8-emulator/binaries/"
-                 "chip8-logo.ch8");
+                 "ibm_logo.ch8");
   //--------------//
 
   while (true) {

@@ -30,7 +30,7 @@ std::string uint8ToHex(uint8_t value);
 
 class Memory {
   std::vector<uint8_t> mem;
-  uint16_t PC = 0;
+  uint16_t PC = 512;
 
 public:
   Memory();

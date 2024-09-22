@@ -92,12 +92,11 @@ size_t Memory::hexToIndex(const std::string &hexAddress) const {
 }
 
 void Memory::loadFonts() {
-  size_t pos = 0;
+  size_t pos = 80;
   for (const std::string &byte : fonts) {
     setByte(pos, byte);
     pos++;
   }
-  setPC(pos);
 }
 
 void Memory::loadBinary(std::string const &filename) {
@@ -137,18 +136,17 @@ void Display::protoPrint() {
   for (const auto &row : matrix) {
     for (bool valor : row) {
       printable = valor ? 'X' : ' ';
-      std::cout << printable << " ";
+      std::cout << printable;
     }
     std::cout << std::endl;
   }
 }
 
 void Display::setAllPixels(bool val) {
-  for (const auto &row : matrix) {
-    for (bool pixel : row) {
+  for (auto &row : matrix) {
+    for (bool &pixel : row) {
       pixel = val;
     }
-    std::cout << std::endl;
   }
 }
 
