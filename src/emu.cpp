@@ -40,17 +40,35 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
   case 0x2:
     callSubroutine(instruction, mem, stack);
     break;
+  case 0x3:
+  case 0x4:
+  case 0x5:
+  case 0x9:
+    conditional(instruction, variableRegs, mem);
+    break;
   case 0x6:
     setRegister(instruction, variableRegs);
     break;
   case 0x7:
     addInRegister(instruction, variableRegs);
     break;
+  case 0x8:
+    arithmetic(instruction, variableRegs);
+    break;
   case 0xA:
     setIndexRegister(instruction, indexReg);
     break;
+  case 0xB:
+    jumpOffset(instruction, variableRegs, mem);
+    break;
+  case 0xC:
+    random(instruction, variableRegs);
+    break;
   case 0xD:
     displaySprite(instruction, variableRegs, mem, disp, indexReg);
+    break;
+  case 0xE:
+    //
     break;
   default:
     std::cout << "Opcode does not exist." << std::endl;
