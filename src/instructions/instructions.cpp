@@ -89,3 +89,25 @@ void displaySprite(uint16_t instruction, components::Registers &variableRegs,
     variableRegs.setReg(0xF, 1);
   }
 }
+
+void conditional(uint16_t instruction, components::Registers &variableRegs,
+                 components::Memory &mem) {
+  uint8_t instCode = (instruction & 0xF000) >> 12;
+  uint8_t x = (instruction & 0x0F00) >> 8;
+  uint8_t nn = instruction & 0x00FF;
+
+  if (instCode == 3 || instCode == 4) {
+    bool conditionMet = (instCode == 3) ? (variableRegs.getReg(x) == nn)
+                                        : (variableRegs.getReg(x) != nn);
+    if (conditionMet) {
+      mem.setPC(mem.getPC() + 2);
+    }
+  }
+  if (instCode == 5 || instCode == 9) {
+    bool conditionMet = (instCode == 5) ? (variableRegs.getReg(x) == nn)
+                                        : (variableRegs.getReg(x) != nn);
+    if (conditionMet) {
+      mem.setPC(mem.getPC() + 2);
+    }
+  }
+}

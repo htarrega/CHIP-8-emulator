@@ -11,6 +11,8 @@ void jumpTo(uint16_t instruction, Memory &mem);
 // 2NNN
 void callSubroutine(uint16_t instruction, Memory &mem,
                     std::stack<uint16_t> &stack);
+// 3XNN, 4XNN, 5XY0 & 9XY0
+void conditional(uint16_t instruction, components::Registers &variableRegs);	
 // 6XNN
 void setRegister(uint16_t instruction, components::Registers &variableRegs);
 // 7XNN
