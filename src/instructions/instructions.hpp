@@ -31,3 +31,20 @@ void random(uint16_t instruction, components::Registers &variableRegs);
 void displaySprite(uint16_t instruction, components::Registers &variableRegs,
                    components::Memory &mem, components::Display &display,
                    uint16_t &indexReg);
+// EX9E & EXA1
+// TODO
+// FX007,FX15 & FX18
+void modTimer(uint16_t instruction, components::Registers &variableRegs,
+              components::Timer &timer);
+// FX1E
+void addToIndex(uint16_t instruction, components::Registers &variableRegs,
+                uint16_t &indexReg);
+// FX0A
+Key getKey(uint16_t instruction, components::Registers &variableRegs);
+// FX29
+void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
+                   uint16_t &indexReg);
+// FX33
+// TODO - half done
+//  FX55 & FX65
+// TODO

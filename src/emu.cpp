@@ -70,6 +70,8 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
   case 0xE:
     //
     break;
+  case 0xF:
+    // Sort out how to diff between all subinst, maybe an entry point
   default:
     std::cout << "Opcode does not exist." << std::endl;
     exit(0);
@@ -84,6 +86,9 @@ int main(int argc, char **argv) {
   components::Registers variableRegs;
   uint16_t indexReg;
   std::stack<uint16_t> stack;
+  Timer timerDelay, timerSound;
+  timerDelay.start(1000 / 60, "timerDelay");
+  timerDelay.start(1000 / 60, "timerSound");
 
   int instructionsPerSecond = 700;
   std::chrono::milliseconds timeOrderInMs(1000);

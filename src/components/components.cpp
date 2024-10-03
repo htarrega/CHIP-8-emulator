@@ -34,6 +34,47 @@ std::string uint8ToHex(uint8_t value) {
   return hexDigits[value];
 }
 
+Key translateCharToKey(char key) {
+  switch (key) {
+  case '0':
+    return Key::Zero;
+  case '1':
+    return Key::One;
+  case '2':
+    return Key::Two;
+  case '3':
+    return Key::Three;
+  case '4':
+    return Key::Four;
+  case '5':
+    return Key::Five;
+  case '6':
+    return Key::Six;
+  case '7':
+    return Key::Seven;
+  case '8':
+    return Key::Eight;
+  case '9':
+    return Key::Nine;
+  case 'A':
+    return Key::A;
+  case 'B':
+    return Key::B;
+  case 'C':
+    return Key::C;
+  case 'D':
+    return Key::D;
+  case 'E':
+    return Key::E;
+  case 'F':
+    return Key::F;
+  case 'G':
+    return Key::G;
+  default:
+    return Key::Invalid;
+  }
+}
+
 // From 000 to 1FF
 Memory::Memory() : mem(4096, 0) { loadFonts(); }
 
@@ -181,3 +222,19 @@ uint8_t Registers::getReg(size_t reg) const {
   }
   return mem[reg];
 }
+
+Timer::Timer() : value(255) {}
+
+void Timer::start(int interval_ms, const std::string &timer_name) {
+  worker = std::thread([this, interval_ms, timer_name]() {
+    while (true) {
+      std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
+      if (value > 0) {
+        value--;
+      }
+    }
+  });
+  worker.detach();
+}
+uint8_t Timer::getValue() const { return value.load(); }
+void Timer::setValue(uint8_t newValue) { value.store(newValue); }

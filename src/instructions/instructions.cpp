@@ -1,3 +1,4 @@
+#include <cstdint>
 #include <random>
 
 #include "../components/components.hpp"
@@ -207,4 +208,39 @@ void random(uint16_t instruction, components::Registers &variableRegs) {
 
   uint8_t randomValue = distrib(gen);
   variableRegs.setReg(x, randomValue);
+}
+
+void modTimer(uint16_t instruction, components::Registers &variableRegs,
+              components::Timer &timer) {
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  const uint8_t vv = instruction & 0x00FF;
+  if (vv == 7) {
+    variableRegs.setReg(x, timer.getValue());
+  } else {
+    timer.setValue(variableRegs.getReg(x));
+  }
+}
+
+void addToIndex(uint16_t instruction, components::Registers &variableRegs,
+                uint16_t &indexReg) {
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  const uint32_t sum = indexReg + variableRegs.getReg(x);
+  if (sum > UINT16_MAX) {
+    variableRegs.setReg(FLAG, 1);
+  }
+  indexReg = indexReg + variableRegs.getReg(x);
+}
+
+Key getKey(uint16_t instruction, components::Registers &variableRegs) {
+  Key pressedK = Key::Invalid;
+  char key;
+  while (translateCharToKey(key) != Key::Invalid) {
+    std::cin >> key;
+  }
+  return translateCharToKey(key);
+}
+
+void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
+                   uint16_t &indexReg) {
+  std::cout << "TODO" << std::endl;
 }

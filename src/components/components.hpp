@@ -2,9 +2,12 @@
 #define components
 
 #include <array>
+#include <atomic>
+#include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <thread>
 #include <vector>
 
 static const std::vector<std::string> fonts = {
@@ -25,6 +28,29 @@ static const std::vector<std::string> fonts = {
     "F0", "80", "F0", "80", "F0", // E
     "F0", "80", "F0", "80", "80"  // F
 };
+
+enum class Key {
+  Zero,
+  One,
+  Two,
+  Three,
+  Four,
+  Five,
+  Six,
+  Seven,
+  Eight,
+  Nine,
+  A,
+  B,
+  C,
+  D,
+  E,
+  F,
+  G,
+  Invalid
+};
+
+Key translateCharToKey(char key);
 
 std::string uint8ToHex(uint8_t value);
 
@@ -78,25 +104,16 @@ public:
   uint8_t getReg(size_t reg) const;
 };
 
-// class Timer {
-//   uint8_t value = 255;
+class Timer {
+public:
+  Timer();
+  void start(int interval_ms, const std::string &timer_name);
+  uint8_t getValue() const;
+  void setValue(uint8_t newValue);
 
-// public:
-//   void decrementTimer() {
-//     if (value == 0) {
-//       value = 255;
-//     } else {
-//       value--;
-//     }
-//   }
-//   uint8_t getValue() const { return value.load(); }
-
-//   void runTimer(Timer &timer) {
-//     while (true) {
-//       std::this_thread::sleep_for(std::chrono::milliseconds(1000 / 60));
-//       timer.decrementTimer();
-//     }
-//   }
-// }
+private:
+  std::atomic<uint8_t> value;
+  std::thread worker;
+};
 
 #endif // components
