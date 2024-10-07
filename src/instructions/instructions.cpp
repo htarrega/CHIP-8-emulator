@@ -1,5 +1,10 @@
 #include <cstdint>
+#include <fcntl.h>
+#include <iostream>
+#include <linux/input.h>
 #include <random>
+#include <stack>
+#include <unistd.h>
 
 #include "../components/components.hpp"
 #include "../instructions/instructions.hpp"
@@ -231,16 +236,78 @@ void addToIndex(uint16_t instruction, components::Registers &variableRegs,
   indexReg = indexReg + variableRegs.getReg(x);
 }
 
-Key getKey(uint16_t instruction, components::Registers &variableRegs) {
-  Key pressedK = Key::Invalid;
-  char key;
-  while (translateCharToKey(key) != Key::Invalid) {
-    std::cin >> key;
-  }
-  return translateCharToKey(key);
-}
+// WIP
+//  Key getKeyPressed(int fd) {
+//    struct input_event ev;
+//    ssize_t n;
+
+//   n = read(fd, &ev, sizeof(ev));
+//   if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1) {
+//     return translateCharToKey(ev.code);
+//   }
+//   return Key::Invalid;
+// }
+
+// void skipInst(uint16_t instruction, components::Registers &variableRegs,
+//               components::Memory &mem) {
+
+//   const uint8_t x = (instruction & 0x0F00) >> 8;
+//   const uint8_t code = (instruction & 0x00F0) >> 4;
+
+//   int fd = open("/dev/input/event3", O_RDONLY);
+//   if (fd < 0) {
+//     std::cerr << "Error opening input device file\n";
+//     return;
+//   }
+
+//   Key pressedK = getKeyPressed(fd);
+//   close(fd);
+
+//   if (code == 9) {
+//     if (variableRegs.getReg(x) == pressedK) {
+//       mem.setPC(mem.getPC() + 2);
+//     }
+//   } else {
+//     if (variableRegs.getReg(x) != pressedK) {
+//       mem.setPC(mem.getPC() + 2);
+//     }
+//   }
+// }
 
 void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
                    uint16_t &indexReg) {
-  std::cout << "TODO" << std::endl;
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  // TODO:set into a variable extracted from config file
+  const uint16_t memoryPos = 4096 + variableRegs.getReg(x) * 5;
+  indexReg = memoryPos;
+}
+
+void binaryDecimalConv(uint16_t instruction,
+                       components::Registers &variableRegs,
+                       uint16_t &indexReg) {
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  uint8_t num = variableRegs.getReg(x);
+  const uint8_t hundreds = num / 100;
+  const uint8_t tens = (num % 100) / 10;
+  const uint8_t ones = num % 10;
+
+  variableRegs.setReg(indexReg, hundreds);
+  variableRegs.setReg(indexReg + 1, tens);
+  variableRegs.setReg(indexReg + 2, ones);
+}
+
+void storeToMemory(uint16_t instruction, components::Registers &variableRegs,
+                   components::Memory &mem, uint16_t &indexReg) {
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  for (uint8_t i = 0; i <= x; i++) {
+    mem.setByte(indexReg + i, variableRegs.getReg(x + i));
+  }
+}
+
+void loadFromMemory(uint16_t instruction, components::Registers &variableRegs,
+                    components::Memory &mem, uint16_t &indexReg) {
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  for (uint8_t i = 0; i <= x; i++) {
+    variableRegs.setReg(x + i, mem.getByte(indexReg + i));
+  }
 }

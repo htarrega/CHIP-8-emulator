@@ -32,7 +32,8 @@ void displaySprite(uint16_t instruction, components::Registers &variableRegs,
                    components::Memory &mem, components::Display &display,
                    uint16_t &indexReg);
 // EX9E & EXA1
-// TODO
+void skipInst(uint16_t instruction, components::Registers &variableRegs,
+              components::Memory &mem);
 // FX007,FX15 & FX18
 void modTimer(uint16_t instruction, components::Registers &variableRegs,
               components::Timer &timer);
@@ -45,6 +46,11 @@ Key getKey(uint16_t instruction, components::Registers &variableRegs);
 void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
                    uint16_t &indexReg);
 // FX33
-// TODO - half done
-//  FX55 & FX65
-// TODO
+void binaryDecimalConv(uint16_t instruction,
+                       components::Registers &variableRegs, uint16_t &indexReg);
+//  FX55
+void storeToMemory(uint16_t instruction, components::Registers &variableRegs,
+                   components::Memory &mem, uint16_t &indexReg);
+// FX65
+void loadFromMemory(uint16_t instruction, components::Registers &variableRegs,
+                    components::Memory &mem, uint16_t &indexReg);
