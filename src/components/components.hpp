@@ -51,6 +51,7 @@ enum class Key {
 };
 
 Key translateCharToKey(char key);
+char translateKeyToChar(Key key);
 
 std::string uint8ToHex(uint8_t value);
 

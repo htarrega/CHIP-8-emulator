@@ -34,6 +34,10 @@ void displaySprite(uint16_t instruction, components::Registers &variableRegs,
 // EX9E & EXA1
 void skipInst(uint16_t instruction, components::Registers &variableRegs,
               components::Memory &mem);
+// Function to choose between all code F instructions
+void chooseFCodeFunc(uint16_t instruction, components::Registers &variableRegs,
+                     components::Memory &mem, uint16_t &indexReg,
+                     Timer &timerDelay, Timer &timerSound);
 // FX007,FX15 & FX18
 void modTimer(uint16_t instruction, components::Registers &variableRegs,
               components::Timer &timer);
@@ -41,7 +45,7 @@ void modTimer(uint16_t instruction, components::Registers &variableRegs,
 void addToIndex(uint16_t instruction, components::Registers &variableRegs,
                 uint16_t &indexReg);
 // FX0A
-Key getKey(uint16_t instruction, components::Registers &variableRegs);
+void setKeyPressed(uint16_t instruction, components::Registers &variableRegs);
 // FX29
 void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
                    uint16_t &indexReg);
@@ -54,3 +58,5 @@ void storeToMemory(uint16_t instruction, components::Registers &variableRegs,
 // FX65
 void loadFromMemory(uint16_t instruction, components::Registers &variableRegs,
                     components::Memory &mem, uint16_t &indexReg);
+// Util to make the program extract a pressed key
+Key getKeyPressed();

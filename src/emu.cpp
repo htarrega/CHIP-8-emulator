@@ -23,7 +23,8 @@ uint16_t fetch(components::Memory &mem) {
 
 void decodeAndExecute(uint16_t instruction, components::Display &disp,
                       components::Memory &mem, std::stack<uint16_t> &stack,
-                      components::Registers &variableRegs, uint16_t &indexReg) {
+                      components::Registers &variableRegs, uint16_t &indexReg,
+                      Timer &timerDelay, Timer &timerSound) {
 
   uint8_t instCode = (instruction >> 12) & 0x0F;
   switch (instCode) {
@@ -68,10 +69,11 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
     displaySprite(instruction, variableRegs, mem, disp, indexReg);
     break;
   case 0xE:
-    //
+    skipInst(instruction, variableRegs, mem);
     break;
   case 0xF:
-    // Sort out how to diff between all subinst, maybe an entry point
+    chooseFCodeFunc(instruction, variableRegs, mem, indexReg, timerDelay,
+                    timerSound);
   default:
     std::cout << "Opcode does not exist." << std::endl;
     exit(0);
@@ -95,17 +97,19 @@ int main(int argc, char **argv) {
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
-  mem.loadBinary("/home/hutarsan/projects/leisure/CHIP-8-emulator/binaries/"
-                 "ibm_logo.ch8");
+  mem.loadBinary(
+      "/home/hugots/projects/external/chip8-test-suite/bin/1-chip8-logo.ch8");
   //--------------//
 
   while (true) {
+    std::cout << "\033[2J\033[1;1H";
     auto execStart = std::chrono::steady_clock::now();
 
     auto instruction = fetch(mem);
-    std::cout << "i: 0x" << std::setw(4) << std::setfill('0') << std::hex
-              << instruction << std::endl;
-    decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg);
+    // std::cout << "i: 0x" << std::setw(4) << std::setfill('0') << std::hex
+    //<< instruction << std::endl;
+    decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg,
+                     timerDelay, timerSound);
 
     auto execEnd = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(

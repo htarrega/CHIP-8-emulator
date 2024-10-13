@@ -75,6 +75,47 @@ Key translateCharToKey(char key) {
   }
 }
 
+char translateKeyToChar(Key key) {
+  switch (key) {
+  case Key::Zero:
+    return '0';
+  case Key::One:
+    return '1';
+  case Key::Two:
+    return '2';
+  case Key::Three:
+    return '3';
+  case Key::Four:
+    return '4';
+  case Key::Five:
+    return '5';
+  case Key::Six:
+    return '6';
+  case Key::Seven:
+    return '7';
+  case Key::Eight:
+    return '8';
+  case Key::Nine:
+    return '9';
+  case Key::A:
+    return 'A';
+  case Key::B:
+    return 'B';
+  case Key::C:
+    return 'C';
+  case Key::D:
+    return 'D';
+  case Key::E:
+    return 'E';
+  case Key::F:
+    return 'F';
+  case Key::G:
+    return 'G';
+  default:
+    return '\0'; // Returning null character for invalid keys
+  }
+}
+
 // From 000 to 1FF
 Memory::Memory() : mem(4096, 0) { loadFonts(); }
 

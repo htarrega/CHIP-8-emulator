@@ -4,6 +4,7 @@
 #include <linux/input.h>
 #include <random>
 #include <stack>
+#include <stdio.h>
 #include <unistd.h>
 
 #include "../components/components.hpp"
@@ -236,43 +237,55 @@ void addToIndex(uint16_t instruction, components::Registers &variableRegs,
   indexReg = indexReg + variableRegs.getReg(x);
 }
 
-// WIP
-//  Key getKeyPressed(int fd) {
-//    struct input_event ev;
-//    ssize_t n;
+Key getKeyPressed() {
+  struct input_event ev;
+  ssize_t n;
+  int fd = open("/dev/input/eventX", O_RDONLY);
 
-//   n = read(fd, &ev, sizeof(ev));
-//   if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1) {
-//     return translateCharToKey(ev.code);
-//   }
-//   return Key::Invalid;
-// }
+  if (fd == -1) {
+    perror("Error opening input device");
+    return Key::Invalid;
+  }
 
-// void skipInst(uint16_t instruction, components::Registers &variableRegs,
-//               components::Memory &mem) {
+  n = read(fd, &ev, sizeof(ev));
+  close(fd);
 
-//   const uint8_t x = (instruction & 0x0F00) >> 8;
-//   const uint8_t code = (instruction & 0x00F0) >> 4;
+  if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1) {
+    return translateCharToKey(ev.code);
+  }
 
-//   int fd = open("/dev/input/event3", O_RDONLY);
-//   if (fd < 0) {
-//     std::cerr << "Error opening input device file\n";
-//     return;
-//   }
+  return Key::Invalid;
+}
 
-//   Key pressedK = getKeyPressed(fd);
-//   close(fd);
+void setKeyPressed(uint16_t instruction, components::Registers &variableRegs) {
+  Key key = Key::Invalid;
+  uint8_t X = (instruction & 0x0F00) >> 8;
 
-//   if (code == 9) {
-//     if (variableRegs.getReg(x) == pressedK) {
-//       mem.setPC(mem.getPC() + 2);
-//     }
-//   } else {
-//     if (variableRegs.getReg(x) != pressedK) {
-//       mem.setPC(mem.getPC() + 2);
-//     }
-//   }
-// }
+  while (key == Key::Invalid) {
+    key = getKeyPressed();
+  }
+
+  variableRegs.setReg(X, translateKeyToChar(key));
+}
+
+void skipInst(uint16_t instruction, components::Registers &variableRegs,
+              components::Memory &mem) {
+
+  const uint8_t x = (instruction & 0x0F00) >> 8;
+  const uint8_t code = (instruction & 0x00F0) >> 4;
+
+  Key pressedK = getKeyPressed();
+
+  if (code == 9) {
+    if (variableRegs.getReg(x) == translateKeyToChar(pressedK)) {
+      mem.setPC(mem.getPC() + 2);
+    }
+  } else {
+    if (variableRegs.getReg(x) != translateKeyToChar(pressedK)) {
+      mem.setPC(mem.getPC() + 2);
+    }
+  }
+}
 
 void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
                    uint16_t &indexReg) {
@@ -309,5 +322,48 @@ void loadFromMemory(uint16_t instruction, components::Registers &variableRegs,
   const uint8_t x = (instruction & 0x0F00) >> 8;
   for (uint8_t i = 0; i <= x; i++) {
     variableRegs.setReg(x + i, mem.getByte(indexReg + i));
+  }
+}
+
+void chooseFCodeFunc(uint16_t instruction, components::Registers &variableRegs,
+                     components::Memory &mem, uint16_t &indexReg,
+                     Timer &timerDelay, Timer &timerSound) {
+  const uint8_t A = (instruction & 0x00F0) >> 4;
+  const uint8_t B = instruction & 0x000F;
+
+  if (A == '0') {
+    if (B == '7') {
+      modTimer(instruction, variableRegs, timerDelay);
+    } else {
+      setKeyPressed(instruction, variableRegs);
+    }
+    return;
+  }
+  if ('A' == '1') {
+    if (B == '5') {
+      modTimer(instruction, variableRegs, timerDelay);
+    }
+    if (B == '8') {
+      modTimer(instruction, variableRegs, timerSound);
+    } else {
+      addToIndex(instruction, variableRegs, indexReg);
+    }
+    return;
+  }
+  if (A == '2') {
+    fontCharacter(instruction, variableRegs, indexReg);
+    return;
+  }
+  if ('A' == '3') {
+    binaryDecimalConv(instruction, variableRegs, indexReg);
+    return;
+  }
+  if ('A' == '5') {
+    storeToMemory(instruction, variableRegs, mem, indexReg);
+    return;
+  }
+  if ('A' == '6') {
+    loadFromMemory(instruction, variableRegs, mem, indexReg);
+    return;
   }
 }
