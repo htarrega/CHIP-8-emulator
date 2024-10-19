@@ -254,7 +254,7 @@ void Registers::setReg(size_t reg, uint8_t val) {
   if (reg >= mem.size() || reg < 0) {
     throw std::out_of_range("Register index out of range");
   }
-  mem[reg] = val;
+  mem[reg] = val & 0xFF;
 }
 
 uint8_t Registers::getReg(size_t reg) const {
@@ -263,7 +263,6 @@ uint8_t Registers::getReg(size_t reg) const {
   }
   return mem[reg];
 }
-
 Timer::Timer() : value(255) {}
 
 void Timer::start(int interval_ms, const std::string &timer_name) {

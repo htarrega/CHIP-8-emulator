@@ -44,18 +44,12 @@ void setRegister(uint16_t instruction, components::Registers &variableRegs) {
 }
 
 void addInRegister(uint16_t instruction, components::Registers &variableRegs) {
-  const uint16_t oneByteMaxVal = 255;
-
   const uint8_t reg = (instruction & 0x0F00) >> 8;
   const uint8_t val = (instruction & 0x00FF);
+
   const uint8_t insideRegVal = variableRegs.getReg(reg);
-  const uint16_t sum =
-      static_cast<uint16_t>(val) + static_cast<uint16_t>(insideRegVal);
-  if (sum > oneByteMaxVal) {
-    variableRegs.setReg(reg, oneByteMaxVal);
-  } else {
-    variableRegs.setReg(reg, val + insideRegVal);
-  }
+
+  variableRegs.setReg(reg, insideRegVal + val);
 }
 
 void setIndexRegister(uint16_t instruction, uint16_t &indexReg) {
@@ -162,37 +156,35 @@ void arithmetic(uint16_t instruction, components::Registers &variableRegs) {
     variableRegs.setReg(x, sum & 0xFF);
     break;
   }
-  case 5:
-    if (variableRegs.getReg(x) < variableRegs.getReg(y)) {
-      variableRegs.setReg(FLAG, 0);
-      variableRegs.setReg(
-          x, 256 + (variableRegs.getReg(x) - variableRegs.getReg(y)));
-    } else {
-      variableRegs.setReg(FLAG, 1);
-      variableRegs.setReg(x, variableRegs.getReg(x) - variableRegs.getReg(y));
-    }
-    break;
-  case 6: {
-    variableRegs.setReg(FLAG, variableRegs.getReg(x) & 0x1);
-    variableRegs.setReg(x, variableRegs.getReg(x) >> 1);
+  case 5: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    const uint8_t Vy = variableRegs.getReg(y);
+    variableRegs.setReg(FLAG, Vx > Vy ? 1 : 0);
+    variableRegs.setReg(x, Vx - Vy);
     break;
   }
-  case 7:
-    if (variableRegs.getReg(x) > variableRegs.getReg(y)) {
-      variableRegs.setReg(FLAG, 0);
-      variableRegs.setReg(
-          x, 256 + (variableRegs.getReg(y) - variableRegs.getReg(x)));
-    } else {
-      variableRegs.setReg(FLAG, 1);
-      variableRegs.setReg(x, variableRegs.getReg(y) - variableRegs.getReg(x));
-    }
+  case 6: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    variableRegs.setReg(FLAG, Vx & 0x1);
+    variableRegs.setReg(x, Vx >> 1);
     break;
+  }
+  case 7: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    const uint8_t Vy = variableRegs.getReg(y);
+    variableRegs.setReg(FLAG, Vy > Vx ? 1 : 0);
+    variableRegs.setReg(x, Vy - Vx);
+    break;
+  }
   case 0xE: {
-    variableRegs.setReg(FLAG, (variableRegs.getReg(x) & 0x80) >> 7);
-    variableRegs.setReg(x, variableRegs.getReg(x) << 1);
+    const uint8_t Vx = variableRegs.getReg(x);
+    variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
+    variableRegs.setReg(x, (Vx << 1) & 0xFF);
     break;
   }
   default:
+    std::cerr << "Unknown arithmetic operation: 0x" << std::hex << (int)subinst
+              << std::endl;
     return;
   }
 }
