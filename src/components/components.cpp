@@ -214,11 +214,9 @@ bool Display::getPixel(const size_t row, const size_t col) {
 }
 
 void Display::protoPrint() {
-  char printable;
   for (const auto &row : matrix) {
     for (bool valor : row) {
-      printable = valor ? 'X' : ' ';
-      std::cout << printable;
+      std::cout << (valor ? "█" : " ");
     }
     std::cout << std::endl;
   }
