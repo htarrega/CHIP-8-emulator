@@ -152,34 +152,38 @@ void arithmetic(uint16_t instruction, components::Registers &variableRegs) {
     break;
   case 4: {
     const uint16_t sum = variableRegs.getReg(x) + variableRegs.getReg(y);
-    variableRegs.setReg(FLAG, sum > 255 ? 1 : 0);
     variableRegs.setReg(x, sum & 0xFF);
+    variableRegs.setReg(FLAG, sum > 255 ? 1 : 0);
     break;
   }
   case 5: {
     const uint8_t Vx = variableRegs.getReg(x);
     const uint8_t Vy = variableRegs.getReg(y);
-    variableRegs.setReg(FLAG, Vx > Vy ? 1 : 0);
-    variableRegs.setReg(x, Vx - Vy);
+    uint8_t result = Vx - Vy;
+    variableRegs.setReg(x, result);
+    variableRegs.setReg(FLAG, (Vx >= Vy) ? 1 : 0);
     break;
   }
+
   case 6: {
     const uint8_t Vx = variableRegs.getReg(x);
-    variableRegs.setReg(FLAG, Vx & 0x1);
     variableRegs.setReg(x, Vx >> 1);
+    variableRegs.setReg(FLAG, Vx & 0x1);
     break;
   }
+
   case 7: {
     const uint8_t Vx = variableRegs.getReg(x);
     const uint8_t Vy = variableRegs.getReg(y);
-    variableRegs.setReg(FLAG, Vy > Vx ? 1 : 0);
-    variableRegs.setReg(x, Vy - Vx);
+    uint8_t result = Vy - Vx;
+    variableRegs.setReg(x, result);
+    variableRegs.setReg(FLAG, (Vy >= Vx) ? 1 : 0);
     break;
   }
   case 0xE: {
     const uint8_t Vx = variableRegs.getReg(x);
-    variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
     variableRegs.setReg(x, (Vx << 1) & 0xFF);
+    variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
     break;
   }
   default:
