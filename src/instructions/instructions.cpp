@@ -288,24 +288,24 @@ void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
 }
 
 void binaryDecimalConv(uint16_t instruction,
-                       components::Registers &variableRegs,
-                       uint16_t &indexReg) {
+                       components::Registers &variableRegs, uint16_t &indexReg,
+                       components::Memory &memory) {
   const uint8_t x = (instruction & 0x0F00) >> 8;
   uint8_t num = variableRegs.getReg(x);
   const uint8_t hundreds = num / 100;
   const uint8_t tens = (num % 100) / 10;
   const uint8_t ones = num % 10;
 
-  variableRegs.setReg(indexReg, hundreds);
-  variableRegs.setReg(indexReg + 1, tens);
-  variableRegs.setReg(indexReg + 2, ones);
+  memory.setByte(indexReg, hundreds);
+  memory.setByte(indexReg + 1, tens);
+  memory.setByte(indexReg + 2, ones);
 }
 
 void storeToMemory(uint16_t instruction, components::Registers &variableRegs,
                    components::Memory &mem, uint16_t &indexReg) {
   const uint8_t x = (instruction & 0x0F00) >> 8;
   for (uint8_t i = 0; i <= x; i++) {
-    mem.setByte(indexReg + i, variableRegs.getReg(x + i));
+    mem.setByte(indexReg + i, variableRegs.getReg(i));
   }
 }
 
@@ -313,7 +313,7 @@ void loadFromMemory(uint16_t instruction, components::Registers &variableRegs,
                     components::Memory &mem, uint16_t &indexReg) {
   const uint8_t x = (instruction & 0x0F00) >> 8;
   for (uint8_t i = 0; i <= x; i++) {
-    variableRegs.setReg(x + i, mem.getByte(indexReg + i));
+    variableRegs.setReg(i, mem.getByte(indexReg + i));
   }
 }
 
@@ -323,38 +323,38 @@ void chooseFCodeFunc(uint16_t instruction, components::Registers &variableRegs,
   const uint8_t A = (instruction & 0x00F0) >> 4;
   const uint8_t B = instruction & 0x000F;
 
-  if (A == '0') {
-    if (B == '7') {
+  if (A == 0x0) {
+    if (B == 0x7) {
       modTimer(instruction, variableRegs, timerDelay);
     } else {
       setKeyPressed(instruction, variableRegs);
     }
     return;
   }
-  if ('A' == '1') {
-    if (B == '5') {
+  if (A == 0x1) {
+    if (B == 0x5) {
       modTimer(instruction, variableRegs, timerDelay);
     }
-    if (B == '8') {
+    if (B == 0x8) {
       modTimer(instruction, variableRegs, timerSound);
     } else {
       addToIndex(instruction, variableRegs, indexReg);
     }
     return;
   }
-  if (A == '2') {
+  if (A == 0x2) {
     fontCharacter(instruction, variableRegs, indexReg);
     return;
   }
-  if ('A' == '3') {
-    binaryDecimalConv(instruction, variableRegs, indexReg);
+  if (A == 0x3) {
+    binaryDecimalConv(instruction, variableRegs, indexReg, mem);
     return;
   }
-  if ('A' == '5') {
+  if (A == 0x5) {
     storeToMemory(instruction, variableRegs, mem, indexReg);
     return;
   }
-  if ('A' == '6') {
+  if (A == 0x6) {
     loadFromMemory(instruction, variableRegs, mem, indexReg);
     return;
   }

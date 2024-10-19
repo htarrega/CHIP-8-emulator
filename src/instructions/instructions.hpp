@@ -51,7 +51,8 @@ void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
                    uint16_t &indexReg);
 // FX33
 void binaryDecimalConv(uint16_t instruction,
-                       components::Registers &variableRegs, uint16_t &indexReg);
+                       components::Registers &variableRegs, uint16_t &indexReg,
+                       components::Memory &memory);
 //  FX55
 void storeToMemory(uint16_t instruction, components::Registers &variableRegs,
                    components::Memory &mem, uint16_t &indexReg);
