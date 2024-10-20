@@ -72,9 +72,13 @@ public:
   uint16_t getPC();
   void print();
   void printInHex();
-  void loadBinary(std::string const &filename);
+  void loadBinary(const std::string &directory);
 
 private:
+  std::string findFirstBinaryFile(const std::string &directory,
+                                  const std::vector<std::string> &extensions);
+  std::vector<char> readBinaryFile(const std::string &filepath);
+  void loadIntoMemory(const std::vector<char> &binary);
   size_t hexToIndex(const std::string &hexAddress) const;
   void loadFonts();
 };

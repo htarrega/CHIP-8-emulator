@@ -182,44 +182,59 @@ void Memory::loadFonts() {
   }
 }
 
-void Memory::loadBinary(std::string const &directory) {
-  const std::vector<std::string> extensions = {"ch8"};
+void Memory::loadBinary(const std::string &directory) {
+  const std::vector<std::string> extensions = {".ch8"};
+  std::string filepath = findFirstBinaryFile(directory, extensions);
 
-  namespace fs = std::filesystem;
+  if (filepath.empty()) {
+    std::cerr << "No binary file with extension .ch8 found in directory: "
+              << directory << std::endl;
+    exit(1);
+  }
 
-  std::string filepath;
-  for (const auto &entry : fs::directory_iterator(directory)) {
+  std::vector<char> binary = readBinaryFile(filepath);
+  loadIntoMemory(binary);
+}
+
+std::string
+Memory::findFirstBinaryFile(const std::string &directory,
+                            const std::vector<std::string> &extensions) {
+
+  for (const auto &entry : std::filesystem::directory_iterator(directory)) {
     if (!entry.is_regular_file())
       continue;
 
     std::string extension = entry.path().extension().string();
     if (std::find(extensions.begin(), extensions.end(), extension) !=
         extensions.end()) {
-      filepath = entry.path().string();
-      break;
+      return entry.path().string();
     }
   }
 
-  if (filepath.empty()) {
-    std::cerr << "rom/3-corax+.ch8: " << directory << std::endl;
-    exit(0);
-  }
+  return "";
+}
 
+std::vector<char> Memory::readBinaryFile(const std::string &filepath) {
   std::ifstream ifs(filepath, std::ios::binary | std::ios::ate);
   if (!ifs) {
     std::cerr << "Error opening file: " << filepath << std::endl;
-    exit(0);
+    exit(1);
   }
 
   std::ifstream::pos_type pos = ifs.tellg();
   std::vector<char> binary(pos);
   ifs.seekg(0, std::ios::beg);
   ifs.read(&binary[0], pos);
+
   if (!ifs) {
     std::cerr << "Error reading file: " << filepath << std::endl;
-    exit(0);
+    exit(1);
   }
 
+  return binary;
+}
+
+void Memory::loadIntoMemory(const std::vector<char> &binary) {
   auto pc = getPC();
   for (auto byte : binary) {
     setByte(pc, byte);

@@ -1,4 +1,3 @@
-#include <array>
 #include <atomic>
 #include <chrono>
 #include <fstream>
@@ -98,7 +97,7 @@ int main(int argc, char **argv) {
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
-  mem.loadBinary("rom/");
+  mem.loadBinary("../rom/");
   //--------------//
 
   while (true) {
