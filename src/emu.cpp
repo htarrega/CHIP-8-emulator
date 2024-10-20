@@ -74,6 +74,7 @@ void decodeAndExecute(uint16_t instruction, components::Display &disp,
   case 0xF:
     chooseFCodeFunc(instruction, variableRegs, mem, indexReg, timerDelay,
                     timerSound);
+    break;
   default:
     std::cout << "Opcode does not exist." << std::endl;
     exit(0);
