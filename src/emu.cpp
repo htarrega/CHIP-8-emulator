@@ -97,8 +97,7 @@ int main(int argc, char **argv) {
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
-  mem.loadBinary(
-      "/home/hugots/projects/external/chip8-test-suite/bin/1-chip8-logo.ch8");
+  mem.loadBinary("rom/");
   //--------------//
 
   while (true) {

@@ -1,4 +1,5 @@
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
@@ -181,23 +182,44 @@ void Memory::loadFonts() {
   }
 }
 
-void Memory::loadBinary(std::string const &filename) {
-  std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
+void Memory::loadBinary(std::string const &directory) {
+  const std::vector<std::string> extensions = {"ch8"};
+
+  namespace fs = std::filesystem;
+
+  std::string filepath;
+  for (const auto &entry : fs::directory_iterator(directory)) {
+    if (!entry.is_regular_file())
+      continue;
+
+    std::string extension = entry.path().extension().string();
+    if (std::find(extensions.begin(), extensions.end(), extension) !=
+        extensions.end()) {
+      filepath = entry.path().string();
+      break;
+    }
+  }
+
+  if (filepath.empty()) {
+    std::cerr << "rom/3-corax+.ch8: " << directory << std::endl;
+    exit(0);
+  }
+
+  std::ifstream ifs(filepath, std::ios::binary | std::ios::ate);
   if (!ifs) {
-    std::cerr << "Error opening file: " << filename << std::endl;
+    std::cerr << "Error opening file: " << filepath << std::endl;
     exit(0);
   }
 
   std::ifstream::pos_type pos = ifs.tellg();
   std::vector<char> binary(pos);
-
   ifs.seekg(0, std::ios::beg);
   ifs.read(&binary[0], pos);
-
   if (!ifs) {
-    std::cerr << "Error reading file: " << filename << std::endl;
+    std::cerr << "Error reading file: " << filepath << std::endl;
     exit(0);
   }
+
   auto pc = getPC();
   for (auto byte : binary) {
     setByte(pc, byte);
