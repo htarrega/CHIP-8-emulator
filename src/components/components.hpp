@@ -84,19 +84,21 @@ private:
 };
 
 class Display {
-  static const size_t rows = 64;
-  static const size_t cols = 32;
-  std::array<std::array<bool, rows>, cols> matrix = {};
+  static const size_t rows = 32;
+  static const size_t cols = 64;
+  std::array<std::array<bool, cols>, rows> matrix = {};
   bool reprint = false;
 
 public:
   void setPixel(const size_t row, const size_t col, bool val);
-  bool getPixel(const size_t row, const size_t col);
+  bool getPixel(const size_t row, const size_t col) const;
   void setAllPixels(bool val);
   void protoPrint();
   void setReprint(bool val);
   bool getReprint();
   void clear();
+  size_t getRows() const;
+  size_t getCols() const;
 };
 
 class Registers {

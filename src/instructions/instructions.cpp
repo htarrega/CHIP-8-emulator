@@ -59,29 +59,31 @@ void setIndexRegister(uint16_t instruction, uint16_t &indexReg) {
 void displaySprite(uint16_t instruction, components::Registers &variableRegs,
                    components::Memory &mem, components::Display &display,
                    uint16_t &indexReg) {
-  constexpr uint8_t SCREEN_WIDTH = 64;
-  constexpr uint8_t SCREEN_HEIGHT = 32;
+  const size_t SCREEN_HEIGHT = display.getRows();
+  const size_t SCREEN_WIDTH = display.getCols();
+  const uint8_t SPRITE_WIDTH = 8;
+  const uint8_t FLAG_REGISTER = 0xF;
 
   const uint8_t X = (instruction & 0x0F00) >> 8;
   const uint8_t Y = (instruction & 0x00F0) >> 4;
   const uint8_t N = instruction & 0x000F;
 
-  const uint8_t coordX = variableRegs.getReg(X) % SCREEN_WIDTH;
-  const uint8_t coordY = variableRegs.getReg(Y) % SCREEN_HEIGHT;
+  const uint8_t startRow = variableRegs.getReg(Y) % SCREEN_HEIGHT;
+  const uint8_t startCol = variableRegs.getReg(X) % SCREEN_WIDTH;
 
-  variableRegs.setReg(FLAG, 0);
+  variableRegs.setReg(FLAG_REGISTER, 0);
   bool pixelFlipped = false;
 
-  for (uint8_t y = 0; y < N; ++y) {
-    uint8_t spriteRow = mem.getByte(indexReg + y);
+  for (uint8_t row = 0; row < N; ++row) {
+    uint8_t spriteRow = mem.getByte(indexReg + row);
 
-    for (uint8_t x = 0; x < 8; ++x) {
-      uint8_t xIndex = (coordX + x) % SCREEN_WIDTH;
-      uint8_t yIndex = (coordY + y) % SCREEN_HEIGHT;
+    for (uint8_t col = 0; col < SPRITE_WIDTH; ++col) {
+      uint8_t currentCol = (startCol + col) % SCREEN_WIDTH;
+      uint8_t currentRow = (startRow + row) % SCREEN_HEIGHT;
 
-      if ((spriteRow & (0x80 >> x)) != 0) {
-        bool currentPixel = display.getPixel(yIndex, xIndex);
-        display.setPixel(yIndex, xIndex, !currentPixel);
+      if ((spriteRow & (0x80 >> col)) != 0) {
+        bool currentPixel = display.getPixel(currentRow, currentCol);
+        display.setPixel(currentRow, currentCol, !currentPixel);
 
         if (currentPixel) {
           pixelFlipped = true;
@@ -91,7 +93,7 @@ void displaySprite(uint16_t instruction, components::Registers &variableRegs,
   }
 
   if (pixelFlipped) {
-    variableRegs.setReg(FLAG, 1);
+    variableRegs.setReg(FLAG_REGISTER, 1);
   }
 }
 

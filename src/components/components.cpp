@@ -246,7 +246,7 @@ void Display::setPixel(const size_t row, const size_t col, bool val) {
   matrix[row][col] = val;
 }
 
-bool Display::getPixel(const size_t row, const size_t col) {
+bool Display::getPixel(const size_t row, const size_t col) const {
   return matrix[row][col];
 }
 
@@ -280,6 +280,10 @@ void Display::clear() {
   }
   setReprint(true);
 }
+
+size_t Display::getCols() const { return cols; }
+
+size_t Display::getRows() const { return rows; }
 
 Registers::Registers() : mem(16, 0) {}
 
