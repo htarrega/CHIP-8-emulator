@@ -29,5 +29,14 @@ message(STATUS "Build type: ${CMAKE_BUILD_TYPE}")
 message(STATUS "C++ Debug flags: ${CMAKE_CXX_FLAGS_DEBUG}")
 message(STATUS "C++ Release flags: ${CMAKE_CXX_FLAGS_RELEASE}")
 
+# Find SDL2
+find_package(SDL2 REQUIRED)
+
+# Include SDL2 headers
+include_directories(${SDL2_INCLUDE_DIRS})
+
 # Add the executable
 add_executable(emu src/emu.cpp src/components/components.cpp src/instructions/instructions.cpp)
+
+# Link SDL2 libraries
+target_link_libraries(emu ${SDL2_LIBRARIES})

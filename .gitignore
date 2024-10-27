@@ -33,3 +33,11 @@
 
 #Builds
 build/*
+bin/*
+
+#Roms
+rom/*
+binaries/*
+
+#VSCode
+.vscode/

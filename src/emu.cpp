@@ -1,3 +1,4 @@
+#include <SDL.h>
 #include <atomic>
 #include <chrono>
 #include <fstream>
@@ -11,6 +12,12 @@
 
 #include "components/components.hpp"
 #include "instructions/instructions.hpp"
+
+const int CHIP8_WIDTH = 64;
+const int CHIP8_HEIGHT = 32;
+const int WINDOW_SCALE = 10;
+const int WINDOW_WIDTH = CHIP8_WIDTH * WINDOW_SCALE;
+const int WINDOW_HEIGHT = CHIP8_HEIGHT * WINDOW_SCALE;
 
 uint16_t fetch(components::Memory &mem) {
   uint16_t pc = mem.getPC();
@@ -105,8 +112,6 @@ int main(int argc, char **argv) {
     auto execStart = std::chrono::steady_clock::now();
 
     auto instruction = fetch(mem);
-    // std::cout << "i: 0x" << std::setw(4) << std::setfill('0') << std::hex
-    //<< instruction << std::endl;
     decodeAndExecute(instruction, disp, mem, stack, variableRegs, indexReg,
                      timerDelay, timerSound);
 
