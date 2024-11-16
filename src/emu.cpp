@@ -1,4 +1,5 @@
 #include <SDL.h>
+
 #include <atomic>
 #include <chrono>
 #include <fstream>
@@ -11,7 +12,7 @@
 #include <vector>
 
 #include "components/components.hpp"
-#include "instructions/instructions.hpp"
+#include "cpu/cpu.hpp"
 
 const int CHIP8_WIDTH = 64;
 const int CHIP8_HEIGHT = 32;
@@ -19,77 +20,36 @@ const int WINDOW_SCALE = 10;
 const int WINDOW_WIDTH = CHIP8_WIDTH * WINDOW_SCALE;
 const int WINDOW_HEIGHT = CHIP8_HEIGHT * WINDOW_SCALE;
 
-uint16_t fetch(components::Memory &mem) {
-  uint16_t pc = mem.getPC();
-  uint8_t highByte = mem.getByte(pc);
-  uint8_t lowByte = mem.getByte(pc + 1);
-  mem.setPC(pc + 2);
-  return (static_cast<uint16_t>(highByte) << 8) | lowByte;
-}
-
-void decodeAndExecute(uint16_t instruction, components::Display &disp,
-                      components::Memory &mem, std::stack<uint16_t> &stack,
-                      components::Registers &variableRegs, uint16_t &indexReg,
-                      Timer &timerDelay, Timer &timerSound) {
-
-  uint8_t instCode = (instruction >> 12) & 0x0F;
-  switch (instCode) {
-  case 0x0:
-    if ((instruction & 0x00FF) == 0xE0) {
-      clearScreen(disp);
-    } else {
-      retFromSubroutine(mem, stack);
-    }
-    break;
-  case 0x1:
-    jumpTo(instruction, mem);
-    break;
-  case 0x2:
-    callSubroutine(instruction, mem, stack);
-    break;
-  case 0x3:
-  case 0x4:
-  case 0x5:
-  case 0x9:
-    conditional(instruction, variableRegs, mem);
-    break;
-  case 0x6:
-    setRegister(instruction, variableRegs);
-    break;
-  case 0x7:
-    addInRegister(instruction, variableRegs);
-    break;
-  case 0x8:
-    arithmetic(instruction, variableRegs);
-    break;
-  case 0xA:
-    setIndexRegister(instruction, indexReg);
-    break;
-  case 0xB:
-    jumpOffset(instruction, variableRegs, mem);
-    break;
-  case 0xC:
-    random(instruction, variableRegs);
-    break;
-  case 0xD:
-    displaySprite(instruction, variableRegs, mem, disp, indexReg);
-    break;
-  case 0xE:
-    skipInst(instruction, variableRegs, mem);
-    break;
-  case 0xF:
-    chooseFCodeFunc(instruction, variableRegs, mem, indexReg, timerDelay,
-                    timerSound);
-    break;
-  default:
-    std::cout << "Opcode does not exist." << std::endl;
-    exit(0);
-  }
-}
-
 int main(int argc, char **argv) {
   std::cout << "I'm EMU!" << std::endl;
-  // INITIALIZATIONS//
+
+  if (SDL_Init(SDL_INIT_VIDEO) != 0) {
+    std::cerr << "SDL could not initialize! SDL_Error: " << SDL_GetError()
+              << std::endl;
+    return 1;
+  }
+
+  SDL_Window *window = SDL_CreateWindow(
+      "CHIP-8 Emulator", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+      WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
+
+  if (!window) {
+    std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError()
+              << std::endl;
+    SDL_Quit();
+    return 1;
+  }
+
+  SDL_Renderer *renderer =
+      SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
+  if (!renderer) {
+    std::cerr << "Renderer could not be created! SDL_Error: " << SDL_GetError()
+              << std::endl;
+    SDL_DestroyWindow(window);
+    SDL_Quit();
+    return 1;
+  }
+
   components::Memory mem;
   components::Display disp;
   components::Registers variableRegs;
@@ -97,7 +57,7 @@ int main(int argc, char **argv) {
   std::stack<uint16_t> stack;
   Timer timerDelay, timerSound;
   timerDelay.start(1000 / 60, "timerDelay");
-  timerDelay.start(1000 / 60, "timerSound");
+  timerSound.start(1000 / 60, "timerSound");
 
   int instructionsPerSecond = 700;
   std::chrono::milliseconds timeOrderInMs(1000);
@@ -105,10 +65,17 @@ int main(int argc, char **argv) {
                                                instructionsPerSecond);
 
   mem.loadBinary("../binaries/");
-  //--------------//
 
-  while (true) {
-    std::cout << "\033[2J\033[1;1H";
+  bool running = true;
+  SDL_Event event;
+
+  while (running) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        running = false;
+      }
+    }
+
     auto execStart = std::chrono::steady_clock::now();
 
     auto instruction = fetch(mem);
@@ -123,7 +90,29 @@ int main(int argc, char **argv) {
       auto remainingTime = timePerInstruction - elapsed;
       std::this_thread::sleep_for(remainingTime);
     }
-    disp.protoPrint();
+
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  // Black background
+    SDL_RenderClear(renderer);
+
+    for (int x = 0; x < 2 * CHIP8_HEIGHT; ++x) {
+      for (int y = 0; y < CHIP8_WIDTH; ++y) {
+        if (disp.getPixel(y, x)) {
+          SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
+        } else {
+          SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+        }
+        SDL_Rect rect = {x * WINDOW_SCALE, y * WINDOW_SCALE, WINDOW_SCALE,
+                         WINDOW_SCALE};
+        SDL_RenderFillRect(renderer, &rect);
+      }
+    }
+
+    SDL_RenderPresent(renderer);
   }
+
+  SDL_DestroyRenderer(renderer);
+  SDL_DestroyWindow(window);
+  SDL_Quit();
+
   return 0;
 }

@@ -36,7 +36,7 @@ find_package(SDL2 REQUIRED)
 include_directories(${SDL2_INCLUDE_DIRS})
 
 # Add the executable
-add_executable(emu src/emu.cpp src/components/components.cpp src/instructions/instructions.cpp)
+add_executable(emu src/emu.cpp src/components/components.cpp src/instructions/instructions.cpp src/cpu/cpu.cpp)
 
 # Link SDL2 libraries
 target_link_libraries(emu ${SDL2_LIBRARIES})
