@@ -104,7 +104,7 @@ int main(int argc, char **argv) {
   std::chrono::milliseconds timePerInstruction(timeOrderInMs.count() /
                                                instructionsPerSecond);
 
-  mem.loadBinary("../rom/");
+  mem.loadBinary("../binaries/");
   //--------------//
 
   while (true) {

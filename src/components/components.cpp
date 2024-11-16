@@ -183,12 +183,15 @@ void Memory::loadFonts() {
 }
 
 void Memory::loadBinary(const std::string &directory) {
+  std::string currentPath = std::filesystem::current_path().string();
+  std::string absolutePath = (std::filesystem::path(currentPath) / directory).string();
+
   const std::vector<std::string> extensions = {".ch8"};
-  std::string filepath = findFirstBinaryFile(directory, extensions);
+  std::string filepath = findFirstBinaryFile(absolutePath, extensions);
 
   if (filepath.empty()) {
     std::cerr << "No binary file with extension .ch8 found in directory: "
-              << directory << std::endl;
+              << absolutePath << std::endl;
     exit(1);
   }
 
@@ -196,10 +199,10 @@ void Memory::loadBinary(const std::string &directory) {
   loadIntoMemory(binary);
 }
 
+
 std::string
 Memory::findFirstBinaryFile(const std::string &directory,
                             const std::vector<std::string> &extensions) {
-
   for (const auto &entry : std::filesystem::directory_iterator(directory)) {
     if (!entry.is_regular_file())
       continue;
