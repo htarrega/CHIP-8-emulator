@@ -110,14 +110,17 @@ class Registers {
 
 class Timer {
  public:
-  Timer();
+  Timer(bool beeper) : beeper(beeper), value(255) {}
+
   void start(int interval_ms, const std::string &timer_name);
   uint8_t getValue() const;
   void setValue(uint8_t newValue);
+  void playBeep();
 
  private:
   std::atomic<uint8_t> value;
   std::thread worker;
+  bool beeper;
 };
 
 #endif  // components

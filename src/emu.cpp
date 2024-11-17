@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   components::Registers variableRegs;
   uint16_t indexReg;
   std::stack<uint16_t> stack;
-  Timer timerDelay, timerSound;
+  Timer timerDelay(true), timerSound(false);
   timerDelay.start(1000 / 60, "timerDelay");
   timerSound.start(1000 / 60, "timerSound");
 

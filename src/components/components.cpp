@@ -1,5 +1,7 @@
 #include "components.hpp"
 
+#include <SDL.h>
+
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
@@ -259,18 +261,55 @@ uint8_t Registers::getReg(size_t reg) const {
   }
   return mem[reg];
 }
-Timer::Timer() : value(255) {}
 
 void Timer::start(int interval_ms, const std::string &timer_name) {
   worker = std::thread([this, interval_ms, timer_name]() {
     while (true) {
       std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
-      if (value > 0) {
-        value--;
+      if (beeper && value.load() == 0) {
+        playBeep();
+      }
+      if (value.load() > 0) {
+        value.store(value.load() - 1);
       }
     }
   });
   worker.detach();
 }
+
 uint8_t Timer::getValue() const { return value.load(); }
 void Timer::setValue(uint8_t newValue) { value.store(newValue); }
+
+void Timer::playBeep() {
+  const int SAMPLE_RATE = 44100;
+  const int FREQUENCY = 1000;
+  const int DURATION = 250;
+  const int NUM_SAMPLES = SAMPLE_RATE * DURATION / 1000;
+
+  SDL_AudioSpec spec;
+  SDL_zero(spec);
+  spec.freq = SAMPLE_RATE;
+  spec.format = AUDIO_S16SYS;
+  spec.channels = 1;
+  spec.samples = 2048;
+  spec.callback = nullptr;
+
+  if (SDL_OpenAudio(&spec, nullptr) < 0) {
+    std::cerr << "SDL_OpenAudio failed: " << SDL_GetError() << std::endl;
+    return;
+  }
+
+  Sint16 *buffer = new Sint16[NUM_SAMPLES];
+  for (int i = 0; i < NUM_SAMPLES; ++i) {
+    double time = i / (double)SAMPLE_RATE;
+    buffer[i] = (Sint16)(32767 * sin(2 * M_PI * FREQUENCY * time));
+  }
+
+  SDL_QueueAudio(1, buffer, NUM_SAMPLES * sizeof(Sint16));
+  SDL_PauseAudio(0);
+
+  SDL_Delay(DURATION);
+
+  SDL_CloseAudio();
+  delete[] buffer;
+}
