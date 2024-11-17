@@ -19,14 +19,6 @@ With this emulator, you can run vintage CHIP-8 games and programs.
 
 ## ⚙️ Building and running the project
 
-### 🐛 Debug Build
-From the source of the project:
-```bash
-mkdir build
-cd build
-cmake .. -DCMAKE_BUILD_TYPE=Debug
-make 
-```
 ### 🚀 Release Build
 From the source of the project:
 ```bash
@@ -35,12 +27,21 @@ cd build
 cmake ..
 make 
 ```
+
+### 🐛 Debug Build
+From the source of the project:
+```bash
+mkdir build
+cd build
+cmake .. -DCMAKE_BUILD_TYPE=Debug
+make 
+```
 ### ▶️ Running the Emulator
-1.Place your <name>.ch8 ROM file in the rom folder. Just one, the emulator will load the first that it founds.
+1. Place your <name>.ch8 ROM file in the rom folder. Just one, the emulator will load the first that it founds.
 
-2.The emulator automatically searches for and loads the first .ch8 binary in the folder.
+2. The emulator automatically searches for and loads the first .ch8 binary in the folder.
 
-3.Run the emulator from the bin folder:
+3. Run the emulator executable generated in the bin folder:
 ```bash
 ./emu 
 ```
