@@ -13,10 +13,9 @@ With this emulator, you can run vintage CHIP-8 games and programs.
 
 ## 📋 Prerequisites
 
-Before you start, make sure you have the following installed:
-
 - **CMake** (version 3.0 or higher) 📦
-- **Clang** (or another C++20 compatible compiler, but you will need to modify the CMakeLists.txt) 🛠️
+- **Clang** (or another C++20-compatible compiler; if using a different compiler, you may need to adjust the `CMakeLists.txt` file) 🛠️
+- **SDL2** library 📺 (for rendering graphics and handling input).
 
 ## ⚙️ Building and running the project
 
@@ -37,10 +36,17 @@ cmake ..
 make 
 ```
 ### ▶️ Running the Emulator
-In order to run the emulator, place <name>.ch8 in the rom folder. The emulator will search and load the first binary in that folder with ch8 extension. Then just execute, from bin folder:
-```bash
+1.Place your <name>.ch8 ROM file in the rom folder. Just one, the emulator will load the first that it founds.
+
+2.The emulator automatically searches for and loads the first .ch8 binary in the folder.
+
+3.Run the emulator from the bin folder:
+
 ./emu 
-```
+
+    Note: An example .ch8 hex game is included to test the emulator. Just build the project and try it out! In this case is a classic brick breaker game, you can see an actual execution in the GIF below. 
+
+![Alt Text](misc/example.gif)
 
 ## 🤝 Contributing
 

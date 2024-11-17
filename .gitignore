@@ -37,7 +37,7 @@ bin/*
 
 #Roms
 rom/*
-binaries/*
+warehouse/
 
 #VSCode
 .vscode/

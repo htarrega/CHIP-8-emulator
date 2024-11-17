@@ -1,11 +1,11 @@
+#include "components.hpp"
+
 #include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <vector>
-
-#include "components.hpp"
 
 std::string uint8ToHex(uint8_t value) {
   static const char hexDigits[256][3] = {
@@ -35,94 +35,50 @@ std::string uint8ToHex(uint8_t value) {
   return hexDigits[value];
 }
 
-Key translateCharToKey(char key) {
+uint8_t translateKeyToChar(Key key) {
   switch (key) {
-  case '0':
-    return Key::Zero;
-  case '1':
-    return Key::One;
-  case '2':
-    return Key::Two;
-  case '3':
-    return Key::Three;
-  case '4':
-    return Key::Four;
-  case '5':
-    return Key::Five;
-  case '6':
-    return Key::Six;
-  case '7':
-    return Key::Seven;
-  case '8':
-    return Key::Eight;
-  case '9':
-    return Key::Nine;
-  case 'A':
-    return Key::A;
-  case 'B':
-    return Key::B;
-  case 'C':
-    return Key::C;
-  case 'D':
-    return Key::D;
-  case 'E':
-    return Key::E;
-  case 'F':
-    return Key::F;
-  case 'G':
-    return Key::G;
-  default:
-    return Key::Invalid;
-  }
-}
-
-char translateKeyToChar(Key key) {
-  switch (key) {
-  case Key::Zero:
-    return '0';
-  case Key::One:
-    return '1';
-  case Key::Two:
-    return '2';
-  case Key::Three:
-    return '3';
-  case Key::Four:
-    return '4';
-  case Key::Five:
-    return '5';
-  case Key::Six:
-    return '6';
-  case Key::Seven:
-    return '7';
-  case Key::Eight:
-    return '8';
-  case Key::Nine:
-    return '9';
-  case Key::A:
-    return 'A';
-  case Key::B:
-    return 'B';
-  case Key::C:
-    return 'C';
-  case Key::D:
-    return 'D';
-  case Key::E:
-    return 'E';
-  case Key::F:
-    return 'F';
-  case Key::G:
-    return 'G';
-  default:
-    return '\0'; // Returning null character for invalid keys
+    case Key::Zero:
+      return 0x0;
+    case Key::One:
+      return 0x1;
+    case Key::Two:
+      return 0x2;
+    case Key::Three:
+      return 0x3;
+    case Key::Four:
+      return 0x4;
+    case Key::Five:
+      return 0x5;
+    case Key::Six:
+      return 0x6;
+    case Key::Seven:
+      return 0x7;
+    case Key::Eight:
+      return 0x8;
+    case Key::Nine:
+      return 0x9;
+    case Key::A:
+      return 0xA;
+    case Key::B:
+      return 0xB;
+    case Key::C:
+      return 0xC;
+    case Key::D:
+      return 0xD;
+    case Key::E:
+      return 0xE;
+    case Key::F:
+      return 0xF;
+    default:
+      return 0xFF;  // Invalid key
   }
 }
 
 // From 000 to 1FF
-Memory::Memory() : mem(4096, 0) { loadFonts(); }
-
-auto Memory::begin() { return mem.begin(); }
-
-auto Memory::end() { return mem.end(); }
+Memory::Memory() : mem(4096, 0) {
+  loadFonts();
+  PC = 512;
+}
 
 uint8_t Memory::getByte(const size_t index) const {
   if (index < mem.size()) {
@@ -175,7 +131,7 @@ size_t Memory::hexToIndex(const std::string &hexAddress) const {
 }
 
 void Memory::loadFonts() {
-  size_t pos = 80;
+  size_t pos = 0;
   for (const std::string &byte : fonts) {
     setByte(pos, byte);
     pos++;
@@ -184,7 +140,8 @@ void Memory::loadFonts() {
 
 void Memory::loadBinary(const std::string &directory) {
   std::string currentPath = std::filesystem::current_path().string();
-  std::string absolutePath = (std::filesystem::path(currentPath) / directory).string();
+  std::string absolutePath =
+      (std::filesystem::path(currentPath) / directory).string();
 
   const std::vector<std::string> extensions = {".ch8"};
   std::string filepath = findFirstBinaryFile(absolutePath, extensions);
@@ -199,13 +156,10 @@ void Memory::loadBinary(const std::string &directory) {
   loadIntoMemory(binary);
 }
 
-
-std::string
-Memory::findFirstBinaryFile(const std::string &directory,
-                            const std::vector<std::string> &extensions) {
+std::string Memory::findFirstBinaryFile(
+    const std::string &directory, const std::vector<std::string> &extensions) {
   for (const auto &entry : std::filesystem::directory_iterator(directory)) {
-    if (!entry.is_regular_file())
-      continue;
+    if (!entry.is_regular_file()) continue;
 
     std::string extension = entry.path().extension().string();
     if (std::find(extensions.begin(), extensions.end(), extension) !=

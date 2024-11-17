@@ -1,14 +1,18 @@
-#include <cstdint>
+#include "../instructions/instructions.hpp"
+
+#include <SDL.h>
 #include <fcntl.h>
-#include <iostream>
 #include <linux/input.h>
-#include <random>
-#include <stack>
 #include <stdio.h>
 #include <unistd.h>
 
+#include <cstdint>
+#include <iostream>
+#include <random>
+#include <stack>
+#include <unordered_map>
+
 #include "../components/components.hpp"
-#include "../instructions/instructions.hpp"
 
 constexpr uint8_t FLAG = 15;
 
@@ -109,24 +113,24 @@ void conditional(uint16_t instruction, components::Registers &variableRegs,
   bool conditionMet = false;
 
   switch (instCode) {
-  case 3:
-    conditionMet = (regXVal == nn);
-    break;
-  case 4:
-    conditionMet = (regXVal != nn);
-    break;
-  case 5: {
-    const uint8_t regYVal = variableRegs.getReg(y);
-    conditionMet = (regXVal == regYVal);
-    break;
-  }
-  case 9: {
-    const uint8_t regYVal = variableRegs.getReg(y);
-    conditionMet = (regXVal != regYVal);
-    break;
-  }
-  default:
-    return;
+    case 3:
+      conditionMet = (regXVal == nn);
+      break;
+    case 4:
+      conditionMet = (regXVal != nn);
+      break;
+    case 5: {
+      const uint8_t regYVal = variableRegs.getReg(y);
+      conditionMet = (regXVal == regYVal);
+      break;
+    }
+    case 9: {
+      const uint8_t regYVal = variableRegs.getReg(y);
+      conditionMet = (regXVal != regYVal);
+      break;
+    }
+    default:
+      return;
   }
 
   if (conditionMet) {
@@ -140,64 +144,61 @@ void arithmetic(uint16_t instruction, components::Registers &variableRegs) {
   const uint8_t subinst = (instruction & 0x000F);
 
   switch (subinst) {
-  case 0:
-    variableRegs.setReg(x, variableRegs.getReg(y));
-    break;
-  case 1:
-    variableRegs.setReg(x, variableRegs.getReg(x) | variableRegs.getReg(y));
-    break;
-  case 2:
-    variableRegs.setReg(x, variableRegs.getReg(x) & variableRegs.getReg(y));
-    break;
-  case 3:
-    variableRegs.setReg(x, variableRegs.getReg(x) ^ variableRegs.getReg(y));
-    break;
-  case 4: {
-    const uint16_t sum = variableRegs.getReg(x) + variableRegs.getReg(y);
-    variableRegs.setReg(x, sum & 0xFF);
-    variableRegs.setReg(FLAG, sum > 255 ? 1 : 0);
-    break;
-  }
-  case 5: {
-    const uint8_t Vx = variableRegs.getReg(x);
-    const uint8_t Vy = variableRegs.getReg(y);
-    uint8_t result = Vx - Vy;
-    variableRegs.setReg(x, result);
-    variableRegs.setReg(FLAG, (Vx >= Vy) ? 1 : 0);
-    break;
-  }
+    case 0:
+      variableRegs.setReg(x, variableRegs.getReg(y));
+      break;
+    case 1:
+      variableRegs.setReg(x, variableRegs.getReg(x) | variableRegs.getReg(y));
+      break;
+    case 2:
+      variableRegs.setReg(x, variableRegs.getReg(x) & variableRegs.getReg(y));
+      break;
+    case 3:
+      variableRegs.setReg(x, variableRegs.getReg(x) ^ variableRegs.getReg(y));
+      break;
+    case 4: {
+      const uint16_t sum = variableRegs.getReg(x) + variableRegs.getReg(y);
+      variableRegs.setReg(x, sum & 0xFF);
+      variableRegs.setReg(FLAG, sum > 255 ? 1 : 0);
+      break;
+    }
+    case 5: {
+      const uint8_t Vx = variableRegs.getReg(x);
+      const uint8_t Vy = variableRegs.getReg(y);
+      uint8_t result = Vx - Vy;
+      variableRegs.setReg(x, result);
+      variableRegs.setReg(FLAG, (Vx >= Vy) ? 1 : 0);
+      break;
+    }
 
-  case 6: {
-    const uint8_t Vx = variableRegs.getReg(x);
-    variableRegs.setReg(x, Vx >> 1);
-    variableRegs.setReg(FLAG, Vx & 0x1);
-    break;
-  }
+    case 6: {
+      const uint8_t Vx = variableRegs.getReg(x);
+      variableRegs.setReg(x, Vx >> 1);
+      variableRegs.setReg(FLAG, Vx & 0x1);
+      break;
+    }
 
-  case 7: {
-    const uint8_t Vx = variableRegs.getReg(x);
-    const uint8_t Vy = variableRegs.getReg(y);
-    uint8_t result = Vy - Vx;
-    variableRegs.setReg(x, result);
-    variableRegs.setReg(FLAG, (Vy >= Vx) ? 1 : 0);
-    break;
-  }
-  case 0xE: {
-    const uint8_t Vx = variableRegs.getReg(x);
-    variableRegs.setReg(x, (Vx << 1) & 0xFF);
-    variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
-    break;
-  }
-  default:
-    std::cerr << "Unknown arithmetic operation: 0x" << std::hex << (int)subinst
-              << std::endl;
-    return;
+    case 7: {
+      const uint8_t Vx = variableRegs.getReg(x);
+      const uint8_t Vy = variableRegs.getReg(y);
+      uint8_t result = Vy - Vx;
+      variableRegs.setReg(x, result);
+      variableRegs.setReg(FLAG, (Vy >= Vx) ? 1 : 0);
+      break;
+    }
+    case 0xE: {
+      const uint8_t Vx = variableRegs.getReg(x);
+      variableRegs.setReg(x, (Vx << 1) & 0xFF);
+      variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
+      break;
+    }
+    default:
+      return;
   }
 }
 
 void jumpOffset(uint16_t instruction, components::Registers &variableRegs,
                 components::Memory &mem) {
-
   const uint16_t newPC = instruction & 0x0FFF + variableRegs.getReg(0);
   mem.setPC(newPC);
 }
@@ -235,53 +236,104 @@ void addToIndex(uint16_t instruction, components::Registers &variableRegs,
   indexReg = indexReg + variableRegs.getReg(x);
 }
 
-Key getKeyPressed() {
-  struct input_event ev;
-  ssize_t n;
-  int fd = open("/dev/input/eventX", O_RDONLY);
+static const std::unordered_map<SDL_Keycode, Key> keyMapping = {
+    {SDLK_1, Key::One},   {SDLK_2, Key::Two},  {SDLK_3, Key::Three},
+    {SDLK_4, Key::C},     {SDLK_q, Key::Four}, {SDLK_w, Key::Five},
+    {SDLK_e, Key::Six},   {SDLK_r, Key::D},    {SDLK_a, Key::Seven},
+    {SDLK_s, Key::Eight}, {SDLK_d, Key::Nine}, {SDLK_f, Key::E},
+    {SDLK_z, Key::A},     {SDLK_x, Key::Zero}, {SDLK_c, Key::B},
+    {SDLK_v, Key::F}};
 
-  if (fd == -1) {
-    perror("Error opening input device");
-    return Key::Invalid;
+SDL_Keycode translateKeyToSDLKey(Key key) {
+  for (const auto &pair : keyMapping) {
+    if (pair.second == key) {
+      return pair.first;
+    }
+  }
+  return SDLK_UNKNOWN;
+}
+
+Key getKeyPressed() {
+  SDL_Event event;
+  const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+
+  while (SDL_PollEvent(&event)) {
+    if (event.type == SDL_QUIT) {
+      exit(0);
+    }
+
+    if (event.type == SDL_KEYDOWN) {
+      auto it = keyMapping.find(event.key.keysym.sym);
+      if (it != keyMapping.end()) {
+        return it->second;
+      }
+    }
   }
 
-  n = read(fd, &ev, sizeof(ev));
-  close(fd);
-
-  if (n == sizeof(ev) && ev.type == EV_KEY && ev.value == 1) {
-    return translateCharToKey(ev.code);
+  for (const auto &pair : keyMapping) {
+    if (keyboardState[SDL_GetScancodeFromKey(pair.first)]) {
+      return pair.second;
+    }
   }
 
   return Key::Invalid;
 }
 
+void waitForKeyRelease(Key pressedKey) {
+  SDL_Event event;
+  const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+  bool keyReleased = false;
+
+  while (!keyReleased) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        exit(0);
+      }
+    }
+
+    for (const auto &pair : keyMapping) {
+      if (pair.second == pressedKey &&
+          !keyboardState[SDL_GetScancodeFromKey(pair.first)]) {
+        keyReleased = true;
+        break;
+      }
+    }
+
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+  }
+}
+
 void setKeyPressed(uint16_t instruction, components::Registers &variableRegs) {
-  Key key = Key::Invalid;
   uint8_t X = (instruction & 0x0F00) >> 8;
 
+  Key key = Key::Invalid;
   while (key == Key::Invalid) {
     key = getKeyPressed();
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
-  variableRegs.setReg(X, translateKeyToChar(key));
+  waitForKeyRelease(key);
+
+  uint8_t keyValue = translateKeyToChar(key);
+  variableRegs.setReg(X, keyValue);
 }
 
 void skipInst(uint16_t instruction, components::Registers &variableRegs,
               components::Memory &mem) {
+  uint8_t x = (instruction & 0x0F00) >> 8;
+  uint8_t code = (instruction & 0x00FF);
 
-  const uint8_t x = (instruction & 0x0F00) >> 8;
-  const uint8_t code = (instruction & 0x00F0) >> 4;
+  uint8_t regValue = variableRegs.getReg(x);
+  Key expectedKey = static_cast<Key>(regValue);
 
-  Key pressedK = getKeyPressed();
+  SDL_Keycode keycode = translateKeyToSDLKey(expectedKey);
+  const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+  bool isPressed = keyboardState[SDL_GetScancodeFromKey(keycode)];
 
-  if (code == 9) {
-    if (variableRegs.getReg(x) == translateKeyToChar(pressedK)) {
-      mem.setPC(mem.getPC() + 2);
-    }
-  } else {
-    if (variableRegs.getReg(x) != translateKeyToChar(pressedK)) {
-      mem.setPC(mem.getPC() + 2);
-    }
+  if (code == 0x9E && isPressed) {
+    mem.setPC(mem.getPC() + 2);
+  } else if (code == 0xA1 && !isPressed) {
+    mem.setPC(mem.getPC() + 2);
   }
 }
 
@@ -289,7 +341,7 @@ void fontCharacter(uint16_t instruction, components::Registers &variableRegs,
                    uint16_t &indexReg) {
   const uint8_t x = (instruction & 0x0F00) >> 8;
   // TODO:set into a variable extracted from config file
-  const uint16_t memoryPos = 4096 + variableRegs.getReg(x) * 5;
+  const uint16_t memoryPos = variableRegs.getReg(x) * 5;
   indexReg = memoryPos;
 }
 

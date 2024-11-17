@@ -11,22 +11,22 @@
 #include <vector>
 
 static const std::vector<std::string> fonts = {
-    "F0", "90", "90", "90", "F0", // 0
-    "20", "60", "20", "20", "70", // 1
-    "F0", "10", "F0", "80", "F0", // 2
-    "F0", "10", "F0", "10", "F0", // 3
-    "90", "90", "F0", "10", "10", // 4
-    "F0", "80", "F0", "10", "F0", // 5
-    "F0", "80", "F0", "90", "F0", // 6
-    "F0", "10", "20", "40", "40", // 7
-    "F0", "90", "F0", "90", "F0", // 8
-    "F0", "90", "F0", "10", "F0", // 9
-    "F0", "90", "F0", "90", "90", // A
-    "E0", "90", "E0", "90", "E0", // B
-    "F0", "80", "80", "80", "F0", // C
-    "E0", "90", "90", "90", "E0", // D
-    "F0", "80", "F0", "80", "F0", // E
-    "F0", "80", "F0", "80", "80"  // F
+    "F0", "90", "90", "90", "F0",  // 0
+    "20", "60", "20", "20", "70",  // 1
+    "F0", "10", "F0", "80", "F0",  // 2
+    "F0", "10", "F0", "10", "F0",  // 3
+    "90", "90", "F0", "10", "10",  // 4
+    "F0", "80", "F0", "10", "F0",  // 5
+    "F0", "80", "F0", "90", "F0",  // 6
+    "F0", "10", "20", "40", "40",  // 7
+    "F0", "90", "F0", "90", "F0",  // 8
+    "F0", "90", "F0", "10", "F0",  // 9
+    "F0", "90", "F0", "90", "90",  // A
+    "E0", "90", "E0", "90", "E0",  // B
+    "F0", "80", "80", "80", "F0",  // C
+    "E0", "90", "90", "90", "E0",  // D
+    "F0", "80", "F0", "80", "F0",  // E
+    "F0", "80", "F0", "80", "80"   // F
 };
 
 enum class Key {
@@ -46,23 +46,20 @@ enum class Key {
   D,
   E,
   F,
-  G,
   Invalid
 };
 
 Key translateCharToKey(char key);
-char translateKeyToChar(Key key);
+uint8_t translateKeyToChar(Key key);
 
 std::string uint8ToHex(uint8_t value);
 
 class Memory {
   std::vector<uint8_t> mem;
-  uint16_t PC = 512;
+  uint16_t PC = 0;
 
-public:
+ public:
   Memory();
-  auto begin();
-  auto end();
   uint8_t getByte(const size_t index) const;
   uint8_t getByte(const std::string &index);
   void setByte(const size_t index, uint8_t value);
@@ -74,7 +71,7 @@ public:
   void printInHex();
   void loadBinary(const std::string &directory);
 
-private:
+ private:
   std::string findFirstBinaryFile(const std::string &directory,
                                   const std::vector<std::string> &extensions);
   std::vector<char> readBinaryFile(const std::string &filepath);
@@ -89,7 +86,7 @@ class Display {
   std::array<std::array<bool, cols>, rows> matrix = {};
   bool reprint = false;
 
-public:
+ public:
   void setPixel(const size_t row, const size_t col, bool val);
   bool getPixel(const size_t row, const size_t col) const;
   void setAllPixels(bool val);
@@ -104,7 +101,7 @@ public:
 class Registers {
   std::vector<uint8_t> mem;
 
-public:
+ public:
   Registers();
   Registers(size_t size);
   void setReg(size_t reg, uint8_t val);
@@ -112,15 +109,15 @@ public:
 };
 
 class Timer {
-public:
+ public:
   Timer();
   void start(int interval_ms, const std::string &timer_name);
   uint8_t getValue() const;
   void setValue(uint8_t newValue);
 
-private:
+ private:
   std::atomic<uint8_t> value;
   std::thread worker;
 };
 
-#endif // components
+#endif  // components
