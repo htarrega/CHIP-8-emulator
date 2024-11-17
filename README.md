@@ -49,6 +49,9 @@ make
 
 ![Alt Text](misc/example.gif)
 
+**And this is the key mapping:**
+![Alt Text](misc/mapping.gif)
+
 ## 🤝 Contributing
 
 Contributions are welcome! Feel free to open issues or submit pull requests.

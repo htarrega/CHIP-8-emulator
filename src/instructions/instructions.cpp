@@ -113,24 +113,24 @@ void conditional(uint16_t instruction, components::Registers &variableRegs,
   bool conditionMet = false;
 
   switch (instCode) {
-    case 3:
-      conditionMet = (regXVal == nn);
-      break;
-    case 4:
-      conditionMet = (regXVal != nn);
-      break;
-    case 5: {
-      const uint8_t regYVal = variableRegs.getReg(y);
-      conditionMet = (regXVal == regYVal);
-      break;
-    }
-    case 9: {
-      const uint8_t regYVal = variableRegs.getReg(y);
-      conditionMet = (regXVal != regYVal);
-      break;
-    }
-    default:
-      return;
+  case 3:
+    conditionMet = (regXVal == nn);
+    break;
+  case 4:
+    conditionMet = (regXVal != nn);
+    break;
+  case 5: {
+    const uint8_t regYVal = variableRegs.getReg(y);
+    conditionMet = (regXVal == regYVal);
+    break;
+  }
+  case 9: {
+    const uint8_t regYVal = variableRegs.getReg(y);
+    conditionMet = (regXVal != regYVal);
+    break;
+  }
+  default:
+    return;
   }
 
   if (conditionMet) {
@@ -144,56 +144,56 @@ void arithmetic(uint16_t instruction, components::Registers &variableRegs) {
   const uint8_t subinst = (instruction & 0x000F);
 
   switch (subinst) {
-    case 0:
-      variableRegs.setReg(x, variableRegs.getReg(y));
-      break;
-    case 1:
-      variableRegs.setReg(x, variableRegs.getReg(x) | variableRegs.getReg(y));
-      break;
-    case 2:
-      variableRegs.setReg(x, variableRegs.getReg(x) & variableRegs.getReg(y));
-      break;
-    case 3:
-      variableRegs.setReg(x, variableRegs.getReg(x) ^ variableRegs.getReg(y));
-      break;
-    case 4: {
-      const uint16_t sum = variableRegs.getReg(x) + variableRegs.getReg(y);
-      variableRegs.setReg(x, sum & 0xFF);
-      variableRegs.setReg(FLAG, sum > 255 ? 1 : 0);
-      break;
-    }
-    case 5: {
-      const uint8_t Vx = variableRegs.getReg(x);
-      const uint8_t Vy = variableRegs.getReg(y);
-      uint8_t result = Vx - Vy;
-      variableRegs.setReg(x, result);
-      variableRegs.setReg(FLAG, (Vx >= Vy) ? 1 : 0);
-      break;
-    }
+  case 0:
+    variableRegs.setReg(x, variableRegs.getReg(y));
+    break;
+  case 1:
+    variableRegs.setReg(x, variableRegs.getReg(x) | variableRegs.getReg(y));
+    break;
+  case 2:
+    variableRegs.setReg(x, variableRegs.getReg(x) & variableRegs.getReg(y));
+    break;
+  case 3:
+    variableRegs.setReg(x, variableRegs.getReg(x) ^ variableRegs.getReg(y));
+    break;
+  case 4: {
+    const uint16_t sum = variableRegs.getReg(x) + variableRegs.getReg(y);
+    variableRegs.setReg(x, sum & 0xFF);
+    variableRegs.setReg(FLAG, sum > 255 ? 1 : 0);
+    break;
+  }
+  case 5: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    const uint8_t Vy = variableRegs.getReg(y);
+    uint8_t result = Vx - Vy;
+    variableRegs.setReg(x, result);
+    variableRegs.setReg(FLAG, (Vx >= Vy) ? 1 : 0);
+    break;
+  }
 
-    case 6: {
-      const uint8_t Vx = variableRegs.getReg(x);
-      variableRegs.setReg(x, Vx >> 1);
-      variableRegs.setReg(FLAG, Vx & 0x1);
-      break;
-    }
+  case 6: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    variableRegs.setReg(x, Vx >> 1);
+    variableRegs.setReg(FLAG, Vx & 0x1);
+    break;
+  }
 
-    case 7: {
-      const uint8_t Vx = variableRegs.getReg(x);
-      const uint8_t Vy = variableRegs.getReg(y);
-      uint8_t result = Vy - Vx;
-      variableRegs.setReg(x, result);
-      variableRegs.setReg(FLAG, (Vy >= Vx) ? 1 : 0);
-      break;
-    }
-    case 0xE: {
-      const uint8_t Vx = variableRegs.getReg(x);
-      variableRegs.setReg(x, (Vx << 1) & 0xFF);
-      variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
-      break;
-    }
-    default:
-      return;
+  case 7: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    const uint8_t Vy = variableRegs.getReg(y);
+    uint8_t result = Vy - Vx;
+    variableRegs.setReg(x, result);
+    variableRegs.setReg(FLAG, (Vy >= Vx) ? 1 : 0);
+    break;
+  }
+  case 0xE: {
+    const uint8_t Vx = variableRegs.getReg(x);
+    variableRegs.setReg(x, (Vx << 1) & 0xFF);
+    variableRegs.setReg(FLAG, (Vx & 0x80) >> 7);
+    break;
+  }
+  default:
+    return;
   }
 }
 
@@ -255,9 +255,8 @@ SDL_Keycode translateKeyToSDLKey(Key key) {
 
 Key getKeyPressed() {
   SDL_Event event;
-  const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
 
-  while (SDL_PollEvent(&event)) {
+  if (SDL_WaitEvent(&event)) {
     if (event.type == SDL_QUIT) {
       exit(0);
     }
@@ -270,6 +269,7 @@ Key getKeyPressed() {
     }
   }
 
+  const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
   for (const auto &pair : keyMapping) {
     if (keyboardState[SDL_GetScancodeFromKey(pair.first)]) {
       return pair.second;

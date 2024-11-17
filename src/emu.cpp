@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
   components::Registers variableRegs;
   uint16_t indexReg;
   std::stack<uint16_t> stack;
-  Timer timerDelay(true), timerSound(false);
+  Timer timerDelay(false), timerSound(true);
   timerDelay.start(1000 / 60, "timerDelay");
   timerSound.start(1000 / 60, "timerSound");
 
@@ -91,7 +91,7 @@ int main(int argc, char **argv) {
       std::this_thread::sleep_for(remainingTime);
     }
 
-    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);  // Black background
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255); // Black background
     SDL_RenderClear(renderer);
 
     for (int x = 0; x < 2 * CHIP8_HEIGHT; ++x) {

@@ -39,40 +39,40 @@ std::string uint8ToHex(uint8_t value) {
 
 uint8_t translateKeyToChar(Key key) {
   switch (key) {
-    case Key::Zero:
-      return 0x0;
-    case Key::One:
-      return 0x1;
-    case Key::Two:
-      return 0x2;
-    case Key::Three:
-      return 0x3;
-    case Key::Four:
-      return 0x4;
-    case Key::Five:
-      return 0x5;
-    case Key::Six:
-      return 0x6;
-    case Key::Seven:
-      return 0x7;
-    case Key::Eight:
-      return 0x8;
-    case Key::Nine:
-      return 0x9;
-    case Key::A:
-      return 0xA;
-    case Key::B:
-      return 0xB;
-    case Key::C:
-      return 0xC;
-    case Key::D:
-      return 0xD;
-    case Key::E:
-      return 0xE;
-    case Key::F:
-      return 0xF;
-    default:
-      return 0xFF;  // Invalid key
+  case Key::Zero:
+    return 0x0;
+  case Key::One:
+    return 0x1;
+  case Key::Two:
+    return 0x2;
+  case Key::Three:
+    return 0x3;
+  case Key::Four:
+    return 0x4;
+  case Key::Five:
+    return 0x5;
+  case Key::Six:
+    return 0x6;
+  case Key::Seven:
+    return 0x7;
+  case Key::Eight:
+    return 0x8;
+  case Key::Nine:
+    return 0x9;
+  case Key::A:
+    return 0xA;
+  case Key::B:
+    return 0xB;
+  case Key::C:
+    return 0xC;
+  case Key::D:
+    return 0xD;
+  case Key::E:
+    return 0xE;
+  case Key::F:
+    return 0xF;
+  default:
+    return 0xFF; // Invalid key
   }
 }
 
@@ -158,10 +158,12 @@ void Memory::loadBinary(const std::string &directory) {
   loadIntoMemory(binary);
 }
 
-std::string Memory::findFirstBinaryFile(
-    const std::string &directory, const std::vector<std::string> &extensions) {
+std::string
+Memory::findFirstBinaryFile(const std::string &directory,
+                            const std::vector<std::string> &extensions) {
   for (const auto &entry : std::filesystem::directory_iterator(directory)) {
-    if (!entry.is_regular_file()) continue;
+    if (!entry.is_regular_file())
+      continue;
 
     std::string extension = entry.path().extension().string();
     if (std::find(extensions.begin(), extensions.end(), extension) !=
@@ -264,13 +266,21 @@ uint8_t Registers::getReg(size_t reg) const {
 
 void Timer::start(int interval_ms, const std::string &timer_name) {
   worker = std::thread([this, interval_ms, timer_name]() {
+    bool beepPlayed = false;
     while (true) {
       std::this_thread::sleep_for(std::chrono::milliseconds(interval_ms));
-      if (beeper && value.load() == 0) {
-        playBeep();
+
+      if (value.load() == 0 && beepPlayed) {
+        beepPlayed = false;
       }
+
       if (value.load() > 0) {
         value.store(value.load() - 1);
+
+        if (beeper && !beepPlayed && value.load() > 0) {
+          playBeep();
+          beepPlayed = true;
+        }
       }
     }
   });
