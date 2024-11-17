@@ -41,10 +41,10 @@ make
 2.The emulator automatically searches for and loads the first .ch8 binary in the folder.
 
 3.Run the emulator from the bin folder:
-
+```bash
 ./emu 
-
-    Note: An example .ch8 hex game is included to test the emulator. Just build the project and try it out! In this case is a classic brick breaker game, you can see an actual execution in the GIF below. 
+```
+> Note: An example .ch8 hex game is included to test the emulator. Just build the project and try it out! In this case is a classic brick breaker game, you can see an actual execution in the GIF below. 
 
 ![Alt Text](misc/example.gif)
 
